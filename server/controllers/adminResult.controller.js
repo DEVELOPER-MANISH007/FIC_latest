@@ -20,11 +20,19 @@ export const getResults = asyncHandler(async (req, res) => {
 
   if (req.query.keyword) {
     const re = new RegExp(req.query.keyword, "i");
-    const all = await query.clone();
-    const filtered = all.filter((r) => re.test(r.student?.name || "") || re.test(r.exam?.name || ""));
+    const all = await Result.find(filter)
+      .populate("student", "name email phone")
+      .populate("exam", "name topic")
+      .sort({ createdAt: -1 })
+      .lean();
+    const filtered = all.filter(
+      (r) => re.test(r.student?.name || "") || re.test(r.exam?.name || "")
+    );
     const total = filtered.length;
     const items = filtered.slice(skip, skip + limit);
-    return res.status(200).json(new ApiResponse(200, { items, pagination: { page, limit, total, pages: Math.ceil(total / limit) } }));
+    return res.status(200).json(
+      new ApiResponse(200, { items, pagination: { page, limit, total, pages: Math.ceil(total / limit) || 1 } })
+    );
   }
 
   const [items, total] = await Promise.all([
