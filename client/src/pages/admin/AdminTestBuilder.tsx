@@ -237,13 +237,20 @@ const AdminTestBuilder = () => {
       if (summary) {
         const fresh = (summary.exam.questions || []).filter((q): q is QuestionBankItem => typeof q !== "string");
         setQuestions(fresh);
-        setImportSummary(
-          `Imported ${summary.importedCount} question${summary.importedCount === 1 ? "" : "s"} into this test.` +
-            (summary.failedCount ? ` ${summary.failedCount} row(s) failed.` : "")
-        );
+        let text = `Imported ${summary.importedCount} question${summary.importedCount === 1 ? "" : "s"} into this test.`;
+        if (summary.failedCount) {
+          text += ` ${summary.failedCount} row(s) failed:`;
+          text += summary.failed.map((f) => ` Row ${f.row}: ${f.reason}`).join(";");
+        }
+        setImportSummary(text);
       }
     } catch (err: any) {
-      setImportSummary(err?.response?.data?.message || "Import failed. Check the file format.");
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0] ||
+        err?.message ||
+        "Import failed";
+      setImportSummary(message);
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

@@ -12,11 +12,11 @@ import ApiResponse from "../utils/ApiResponse.js";
 export const getInstituteDetails = asyncHandler(async (req, res) => {
   const details = {
     name: "Future IT College",
-    alternateName: "Dinesh Computer Center",
+    alternateName: "FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER",
     tagline: "Learn Today. Lead Tomorrow.",
     establishedYear: 2016,
     address: {
-      line1: "Near Primary School, Khair Road, Veerapura",
+      line1: "FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER",
       city: "Aligarh",
       state: "Uttar Pradesh",
       pincode: "202142",
@@ -24,7 +24,7 @@ export const getInstituteDetails = asyncHandler(async (req, res) => {
     contact: {
       phones: ["9927444970", "6398842895"],
       email: "DCM20020@gmail.com",
-      mapUrl: "https://maps.app.goo.gl/Jn1pD1dM2NYKdS8y8",
+      mapUrl: "https://maps.app.goo.gl/LMMnXY95ohxfgmHj8",
     },
     stats: {
       studentsTrained: 3000,

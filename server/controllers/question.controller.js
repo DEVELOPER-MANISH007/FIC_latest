@@ -117,19 +117,30 @@ export const bulkDeleteQuestions = asyncHandler(async (req, res) => {
  *        an existing question verbatim are reported back, not silently dropped.
  */
 export const importQuestions = asyncHandler(async (req, res) => {
-  if (!req.file) throw new ApiError(400, "Please upload an Excel (.xlsx) or CSV file");
+  if (!req.file) throw new ApiError(400, "No file received. Upload a .csv or .xlsx file with the field name \"file\".");
 
-  const rawRows = parseExcelBuffer(req.file.buffer);
-  if (!rawRows.length) throw new ApiError(400, "The uploaded file has no data rows");
+  let rawRows;
+  try {
+    rawRows = parseExcelBuffer(req.file.buffer, {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+    });
+  } catch (err) {
+    console.error("[CSV Import] Parse failed:", err.message);
+    throw new ApiError(400, err.message);
+  }
+
+  if (!rawRows.length) throw new ApiError(400, "The uploaded file has no data rows after the header row");
 
   const categoryCache = new Map();
   const getCategoryId = async (name) => {
-    const key = name.trim().toLowerCase();
+    const categoryName = name?.trim() || "General";
+    const key = categoryName.toLowerCase();
     if (categoryCache.has(key)) return categoryCache.get(key);
-    let category = await Category.findOne({ name: new RegExp(`^${name.trim()}$`, "i") });
+    let category = await Category.findOne({ name: new RegExp(`^${categoryName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") });
     if (!category) {
-      const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      category = await Category.create({ name: name.trim(), slug });
+      const slug = categoryName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      category = await Category.create({ name: categoryName, slug: slug || "general" });
     }
     categoryCache.set(key, category._id);
     return category._id;
@@ -143,11 +154,14 @@ export const importQuestions = asyncHandler(async (req, res) => {
     const rowNumber = i + 2; // account for header row
     const normalized = normalizeQuestionRow(rawRows[i]);
 
-    const missing = ["category", "question", "optionA", "optionB", "optionC", "optionD", "correctAnswer"].filter(
+    const missing = ["question", "optionA", "optionB", "optionC", "optionD", "correctAnswer"].filter(
       (field) => !normalized[field]
     );
     if (missing.length || !["A", "B", "C", "D"].includes(normalized.correctAnswer)) {
-      failed.push({ row: rowNumber, reason: `Missing/invalid: ${missing.join(", ") || "correctAnswer"}` });
+      const detail = missing.length
+        ? `Missing or empty: ${missing.join(", ")}`
+        : `Correct Answer must be A, B, C, or D (got "${normalized.correctAnswer || ""}")`;
+      failed.push({ row: rowNumber, reason: detail });
       continue;
     }
 
@@ -176,7 +190,8 @@ export const importQuestions = asyncHandler(async (req, res) => {
       });
       imported.push(doc._id);
     } catch (err) {
-      failed.push({ row: rowNumber, reason: err.message });
+      console.error(`[CSV Import] Row ${rowNumber} insert failed:`, err.message);
+      failed.push({ row: rowNumber, reason: err.message || "Database insert failed" });
     }
   }
 

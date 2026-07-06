@@ -6,18 +6,41 @@ import type { ExamResult, StudentUser } from "@/types";
 
 const AdminStudentProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const [student, setStudent] = useState<(StudentUser & { isActive: boolean }) | null>(null);
+  const studentId = id && id !== "undefined" ? id : undefined;
+  const [student, setStudent] = useState<(StudentUser & { isActive?: boolean }) | null>(null);
   const [results, setResults] = useState<ExamResult[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!id) return;
-    fetchStudentProfile(id).then((data) => {
-      if (data) {
-        setStudent(data.student);
-        setResults(data.results);
-      }
-    });
-  }, [id]);
+    if (!studentId) return;
+    setError("");
+    fetchStudentProfile(studentId)
+      .then((data) => {
+        if (data) {
+          setStudent(data.student);
+          setResults(data.results);
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message || "Could not load student profile");
+      });
+  }, [studentId]);
+
+  if (!studentId) {
+    return (
+      <AdminLayout title="Student Profile">
+        <p className="text-[13.5px] text-red-500">Invalid student link.</p>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Student Profile">
+        <p className="text-[13.5px] text-red-500">{error}</p>
+      </AdminLayout>
+    );
+  }
 
   if (!student) return <AdminLayout title="Student Profile"><div className="h-64 ph card" /></AdminLayout>;
 

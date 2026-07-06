@@ -2,22 +2,23 @@ import type { Course, FAQItem, RoadmapStep, Testimonial } from "@/types";
 
 export const SITE = {
   name: "Future IT College",
-  alternateName: "Dinesh Computer Center, Veerapura",
+  alternateName: "FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER",
+  locationName: "FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER",
   tagline: "Learn Today. Lead Tomorrow.",
   establishedYear: 2016,
   description:
     "Empowering students with practical computer education, industry-ready skills and career-focused learning since 2016. From computer basics to professional software training, we prepare students for real-world success.",
   address: {
-    line1: "Near Primary School, Khair Road, Veerapura",
+    line1: "FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER",
     city: "Aligarh",
     state: "Uttar Pradesh",
     pincode: "202142",
   },
   phones: ["9927444970", "6398842895"],
   email: "DCM20020@gmail.com",
-  mapUrl: "https://maps.app.goo.gl/Jn1pD1dM2NYKdS8y8",
+  mapUrl: "https://maps.app.goo.gl/LMMnXY95ohxfgmHj8",
   mapEmbedUrl:
-    "https://maps.google.com/maps?q=Near%20Primary%20School%2C%20Khair%20Road%2C%20Veerapura%2C%20Aligarh%2C%20Uttar%20Pradesh%20202142&z=15&output=embed",
+    "https://maps.google.com/maps?q=28.0271461,77.9218959&hl=en&z=17&output=embed",
 };
 
 export const NAV_LINKS = [
@@ -153,7 +154,7 @@ export const FAQS: FAQItem[] = [
   },
   {
     question: "How can I contact the institute?",
-    answer: "Call 9927444970 / 6398842895, email DCM20020@gmail.com, or visit us near Primary School, Khair Road, Veerapura, Aligarh.",
+    answer: "Call 9927444970 / 6398842895, email DCM20020@gmail.com, or visit us at FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER, Aligarh.",
   },
 ];
 

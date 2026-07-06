@@ -76,8 +76,6 @@ export interface ExamImportSummary {
 export const importExamQuestions = async (examId: string, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await api.post<ApiResponse<ExamImportSummary>>(`/admin/exams/${examId}/questions/import`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await api.post<ApiResponse<ExamImportSummary>>(`/admin/exams/${examId}/questions/import`, formData);
   return res.data.data;
 };

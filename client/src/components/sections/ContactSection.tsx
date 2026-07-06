@@ -49,12 +49,8 @@ const ContactSection = () => {
                 <MapPinIcon size={20} />
               </div>
               <div>
-                <h3 className="font-display font-semibold text-[15px]">Future IT College</h3>
+                <h3 className="font-display font-semibold text-[15px]">{SITE.locationName}</h3>
                 <p className="text-[13.5px] text-[var(--ink-soft)] mt-1 leading-relaxed">
-                  {SITE.alternateName}
-                  <br />
-                  {SITE.address.line1}
-                  <br />
                   {SITE.address.city}, {SITE.address.state} – {SITE.address.pincode}
                 </p>
               </div>
@@ -98,14 +94,13 @@ const ContactSection = () => {
             </div>
           </Reveal>
 
-          <Reveal delay={0.1} className="rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-card)] min-h-[320px]">
+          <Reveal delay={0.1} className="w-full rounded-xl overflow-hidden shadow-lg">
             <iframe
-              title="Future IT College location map"
+              title="FUTURE IT COLLEGE VEERPURA & COMPUTER CENTER location map"
               src={SITE.mapEmbedUrl}
-              width="100%"
-              height="100%"
-              style={{ minHeight: "320px", border: 0 }}
+              className="w-full h-[420px] border-0"
               loading="lazy"
+              allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
             />
           </Reveal>

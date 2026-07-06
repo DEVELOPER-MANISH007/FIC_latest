@@ -4,6 +4,20 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
+/** Map Mongoose document to the shape the frontend expects (`id`, not `_id`). */
+const publicStudent = (student) => ({
+  id: student._id,
+  name: student.name,
+  email: student.email,
+  phone: student.phone,
+  address: student.address,
+  course: student.course,
+  photo: student.photo || "",
+  studentIdCode: student.studentIdCode || "",
+  isActive: student.isActive,
+  createdAt: student.createdAt,
+});
+
 /**
  * @route GET /api/admin/students
  * @desc  List/search students. Query: page, limit, keyword
@@ -25,7 +39,10 @@ export const getStudents = asyncHandler(async (req, res) => {
   ]);
 
   return res.status(200).json(
-    new ApiResponse(200, { items, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
+    new ApiResponse(200, {
+      items: items.map(publicStudent),
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    })
   );
 });
 
@@ -39,7 +56,7 @@ export const getStudentProfile = asyncHandler(async (req, res) => {
 
   const results = await Result.find({ student: student._id }).populate("exam", "name topic").sort({ createdAt: -1 });
 
-  return res.status(200).json(new ApiResponse(200, { student, results }));
+  return res.status(200).json(new ApiResponse(200, { student: publicStudent(student), results }));
 });
 
 /**
@@ -55,7 +72,7 @@ export const toggleStudentStatus = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, student, student.isActive ? "Account enabled" : "Account disabled"));
+    .json(new ApiResponse(200, publicStudent(student), student.isActive ? "Account enabled" : "Account disabled"));
 });
 
 /**

@@ -13,7 +13,7 @@ const Footer = () => (
             <img src={logo} alt="Future IT College logo" className="w-10 h-10 rounded-xl object-cover bg-white" />
             <div>
               <p className="font-display font-bold text-white text-[15px]">Future IT College</p>
-              <p className="text-[10.5px] text-[#9AA4D4]">Dinesh Computer Center, Veerapura</p>
+              <p className="text-[10.5px] text-[#9AA4D4]">{SITE.locationName}</p>
             </div>
           </div>
           <p className="text-[13px] text-[#9AA4D4] mt-5 leading-relaxed">
@@ -57,7 +57,9 @@ const Footer = () => (
         <div>
           <p className="font-display font-semibold text-white text-[14px] mb-4">Location</p>
           <p className="text-[13.5px] text-[#9AA4D4] leading-relaxed">
-            {SITE.address.line1}, {SITE.address.city}, {SITE.address.state} – {SITE.address.pincode}
+            {SITE.locationName}
+            <br />
+            {SITE.address.city}, {SITE.address.state} – {SITE.address.pincode}
           </p>
           <a
             href={SITE.mapUrl}
@@ -72,7 +74,7 @@ const Footer = () => (
 
       <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
         <p className="text-[12px] text-[#8188B8]">© {new Date().getFullYear()} Future IT College. All rights reserved.</p>
-        <p className="text-[12px] text-[#8188B8]">Known as Dinesh Computer Center, Veerapura</p>
+        <p className="text-[12px] text-[#8188B8]">{SITE.locationName}</p>
       </div>
     </div>
   </footer>

@@ -1,4 +1,5 @@
 import multer from "multer";
+import ApiError from "../utils/ApiError.js";
 
 /**
  * In-memory storage for Excel/CSV uploads — the Question Bank Import
@@ -13,11 +14,13 @@ const fileFilter = (req, file, cb) => {
     "application/vnd.ms-excel",
     "text/csv",
     "application/csv",
+    "text/plain",
+    "application/octet-stream",
   ];
   if (allowed.includes(file.mimetype) || /\.(xlsx|csv)$/i.test(file.originalname)) {
     return cb(null, true);
   }
-  cb(new Error("Only .xlsx or .csv files are allowed"));
+  cb(new ApiError(400, `Unsupported file type "${file.mimetype}". Upload a .xlsx or .csv file.`));
 };
 
 const uploadExcel = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });

@@ -20,6 +20,11 @@ api.interceptors.request.use((config) => {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Let the browser set multipart boundaries for file uploads.
+  if (config.data instanceof FormData) {
+    config.headers = config.headers || {};
+    delete config.headers["Content-Type"];
+  }
   return config;
 });
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { fetchStudents, toggleStudentStatus, deleteStudent } from "@/services/api/adminStudent.service";
+import { fetchStudents, toggleStudentStatus, deleteStudent, getStudentId } from "@/services/api/adminStudent.service";
 import type { StudentUser } from "@/types";
 
 const AdminStudents = () => {
@@ -24,7 +24,9 @@ const AdminStudents = () => {
   }, [keyword]);
 
   const handleToggle = async (s: StudentUser & { isActive?: boolean }) => {
-    await toggleStudentStatus(s.id, !s.isActive);
+    const studentId = getStudentId(s);
+    if (!studentId) return;
+    await toggleStudentStatus(studentId, !s.isActive);
     load();
   };
 
@@ -59,12 +61,18 @@ const AdminStudents = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map((s) => (
-                <tr key={s.id} className="border-b border-[var(--line)] last:border-0">
+              {students.map((s) => {
+                const studentId = getStudentId(s);
+                return (
+                <tr key={studentId ?? s.email} className="border-b border-[var(--line)] last:border-0">
                   <td className="p-4 font-medium">
-                    <Link to={`/admin/students/${s.id}`} className="text-[var(--royal)] hover:underline">
-                      {s.name}
-                    </Link>
+                    {studentId ? (
+                      <Link to={`/admin/students/${studentId}`} className="text-[var(--royal)] hover:underline">
+                        {s.name}
+                      </Link>
+                    ) : (
+                      <span>{s.name}</span>
+                    )}
                   </td>
                   <td className="p-4 text-[var(--ink-soft)]">{s.email}</td>
                   <td className="p-4 text-[var(--ink-soft)]">{s.phone}</td>
@@ -72,18 +80,23 @@ const AdminStudents = () => {
                   <td className="p-4">
                     <button
                       onClick={() => handleToggle(s)}
+                      disabled={!studentId}
                       className={s.isActive === false ? "text-red-500 font-medium" : "text-green-600 font-medium"}
                     >
                       {s.isActive === false ? "Disabled" : "Active"}
                     </button>
                   </td>
                   <td className="p-4">
-                    <button onClick={() => handleDelete(s.id)} className="text-red-500 font-medium hover:underline">
-                      Delete
-                    </button>
+                    {studentId ? (
+                      <button onClick={() => handleDelete(studentId)} className="text-red-500 font-medium hover:underline">
+                        Delete
+                      </button>
+                    ) : (
+                      <span className="text-[var(--ink-soft)]">—</span>
+                    )}
                   </td>
                 </tr>
-              ))}
+              );})}
               {students.length === 0 && (
                 <tr><td colSpan={6} className="p-8 text-center text-[var(--ink-soft)]">No students found.</td></tr>
               )}

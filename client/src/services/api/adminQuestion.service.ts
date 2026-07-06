@@ -57,7 +57,7 @@ export const importQuestionsExcel = async (file: File) => {
     duplicateCount: number;
     failed: { row: number; reason: string }[];
     duplicates: { row: number; question: string }[];
-  }>>("/admin/questions/import", formData, { headers: { "Content-Type": "multipart/form-data" } });
+  }>>("/admin/questions/import", formData);
   return res.data.data;
 };
 

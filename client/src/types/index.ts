@@ -217,7 +217,8 @@ export interface AttemptPaper {
 
 export interface ExamResult {
   _id: string;
-  student: string;
+  /** Populated student — null when the account was later deleted. */
+  student: string | { _id: string; name: string; email?: string; phone?: string } | null;
   /** Populated exam — null when the test was later deleted by an admin. */
   exam: ExamConfig | string | null;
   attempt: string;

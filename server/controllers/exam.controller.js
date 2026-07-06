@@ -246,10 +246,20 @@ export const duplicateExamQuestion = asyncHandler(async (req, res) => {
 export const importExamQuestions = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(req.params.examId);
   if (!exam) throw new ApiError(404, "Test not found");
-  if (!req.file) throw new ApiError(400, "Please upload a CSV (.csv) or Excel (.xlsx) file");
+  if (!req.file) throw new ApiError(400, "No file received. Upload a .csv or .xlsx file with the field name \"file\".");
 
-  const rawRows = parseExcelBuffer(req.file.buffer);
-  if (!rawRows.length) throw new ApiError(400, "The uploaded file has no data rows");
+  let rawRows;
+  try {
+    rawRows = parseExcelBuffer(req.file.buffer, {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+    });
+  } catch (err) {
+    console.error("[CSV Import] Parse failed:", err.message);
+    throw new ApiError(400, err.message);
+  }
+
+  if (!rawRows.length) throw new ApiError(400, "The uploaded file has no data rows after the header row");
 
   const imported = [];
   const failed = [];
@@ -260,7 +270,10 @@ export const importExamQuestions = asyncHandler(async (req, res) => {
 
     const missing = REQUIRED_QUESTION_FIELDS.filter((field) => !normalized[field]);
     if (missing.length || !["A", "B", "C", "D"].includes(normalized.correctAnswer)) {
-      failed.push({ row: rowNumber, reason: `Missing/invalid: ${missing.join(", ") || "correctAnswer"}` });
+      const detail = missing.length
+        ? `Missing or empty: ${missing.join(", ")}`
+        : `Correct Answer must be A, B, C, or D (got "${normalized.correctAnswer || ""}")`;
+      failed.push({ row: rowNumber, reason: detail });
       continue;
     }
 
@@ -283,7 +296,8 @@ export const importExamQuestions = asyncHandler(async (req, res) => {
       });
       imported.push(doc._id);
     } catch (err) {
-      failed.push({ row: rowNumber, reason: err.message });
+      console.error(`[CSV Import] Row ${rowNumber} insert failed:`, err.message);
+      failed.push({ row: rowNumber, reason: err.message || "Database insert failed" });
     }
   }
 

@@ -24,6 +24,16 @@ const errorHandler = (err, req, res, next) => {
     error.message = "Duplicate field value entered";
   }
 
+  if (err.name === "MulterError") {
+    error.statusCode = 400;
+    error.message = err.code === "LIMIT_FILE_SIZE" ? "File is too large (max 10 MB)" : err.message;
+  }
+
+  if (err.message?.includes("Multipart: Boundary not found")) {
+    error.statusCode = 400;
+    error.message = "Invalid file upload request. Please retry the import.";
+  }
+
   if (err.name === "CastError") {
     error.statusCode = 400;
     error.message = `Invalid value for field: ${err.path}`;

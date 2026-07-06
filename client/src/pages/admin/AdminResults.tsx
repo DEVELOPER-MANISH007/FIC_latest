@@ -3,17 +3,45 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { fetchAdminResults, exportResultsExcel } from "@/services/api/adminResult.service";
 import type { ExamResult } from "@/types";
 
+const studentNameOf = (result: ExamResult) => {
+  const { student } = result;
+  if (!student) return "Student (removed)";
+  if (typeof student === "string") return student;
+  return student.name || "Unknown student";
+};
+
+const examNameOf = (result: ExamResult) => {
+  const { exam } = result;
+  if (!exam) return "Test (removed)";
+  if (typeof exam === "string") return exam;
+  return exam.name || "Test (removed)";
+};
+
+const formatDate = (value?: string) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-IN");
+};
+
 const AdminResults = () => {
   const [results, setResults] = useState<ExamResult[]>([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const load = () => {
     setLoading(true);
-    fetchAdminResults({ keyword }).then((data) => {
-      setResults(data?.items || []);
-      setLoading(false);
-    });
+    setError("");
+    fetchAdminResults({ keyword })
+      .then((data) => {
+        setResults(Array.isArray(data?.items) ? data.items : []);
+      })
+      .catch((err) => {
+        setResults([]);
+        setError(err?.response?.data?.message || "Could not load results. Please try again.");
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -21,6 +49,17 @@ const AdminResults = () => {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportResultsExcel();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Could not export results.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <AdminLayout title="Result Management">
@@ -31,14 +70,29 @@ const AdminResults = () => {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
-        <button onClick={() => exportResultsExcel()} className="btn btn-navy btn-sm">
-          Export Excel
+        <button onClick={handleExport} disabled={exporting} className="btn btn-navy btn-sm">
+          {exporting ? "Exporting..." : "Export Excel"}
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] text-red-600">
+          {error}
+        </div>
+      )}
 
       <div className="card overflow-x-auto">
         {loading ? (
           <div className="h-64 ph" />
+        ) : !results.length ? (
+          <div className="p-12 text-center text-[var(--ink-soft)]">
+            <p className="font-medium text-[15px] text-[var(--ink)]">No results found</p>
+            <p className="mt-2 text-[13.5px]">
+              {keyword.trim()
+                ? "Try a different search term or clear the filter."
+                : "Student test results will appear here once exams are submitted."}
+            </p>
+          </div>
         ) : (
           <table className="w-full text-[13.5px]">
             <thead>
@@ -54,19 +108,20 @@ const AdminResults = () => {
             <tbody>
               {results.map((r) => (
                 <tr key={r._id} className="border-b border-[var(--line)] last:border-0">
-                  <td className="p-4 font-medium">{typeof r.student === "string" ? r.student : (r.student as any).name}</td>
-                  <td className="p-4">{typeof r.exam === "string" ? r.exam : r.exam?.name || "Test (removed)"}</td>
-                  <td className="p-4">{r.obtainedMarks}/{r.totalMarks}</td>
-                  <td className="p-4">{r.percentage}%</td>
+                  <td className="p-4 font-medium">{studentNameOf(r)}</td>
+                  <td className="p-4">{examNameOf(r)}</td>
                   <td className="p-4">
-                    <span className={r.isPassed ? "text-green-600" : "text-red-500"}>{r.isPassed ? "Pass" : "Fail"}</span>
+                    {r.obtainedMarks ?? 0}/{r.totalMarks ?? 0}
                   </td>
-                  <td className="p-4 text-[var(--ink-soft)]">{new Date(r.createdAt).toLocaleDateString("en-IN")}</td>
+                  <td className="p-4">{r.percentage ?? 0}%</td>
+                  <td className="p-4">
+                    <span className={r.isPassed ? "text-green-600" : "text-red-500"}>
+                      {r.isPassed ? "Pass" : "Fail"}
+                    </span>
+                  </td>
+                  <td className="p-4 text-[var(--ink-soft)]">{formatDate(r.createdAt)}</td>
                 </tr>
               ))}
-              {results.length === 0 && (
-                <tr><td colSpan={6} className="p-8 text-center text-[var(--ink-soft)]">No results found.</td></tr>
-              )}
             </tbody>
           </table>
         )}

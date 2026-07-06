@@ -22,7 +22,12 @@ const ImportExcelModal = ({ onClose, onImported }: Props) => {
       setResult(res);
       if (res && res.importedCount > 0) onImported();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Import failed");
+      setError(
+        err?.response?.data?.message ||
+          err?.response?.data?.errors?.[0] ||
+          err?.message ||
+          "Import failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -37,8 +42,8 @@ const ImportExcelModal = ({ onClose, onImported }: Props) => {
         </div>
 
         <p className="text-[13px] text-[var(--ink-soft)] mb-4">
-          Required columns: Category, Question, Option A, Option B, Option C, Option D, Correct Answer, Difficulty,
-          Marks, Explanation (optional), Topic, Language.
+          Required columns: Question, Option A, Option B, Option C, Option D, Correct Answer (A/B/C/D), Difficulty,
+          Marks. Optional: Category, Explanation, Topic, Language.
         </p>
 
         <input ref={fileRef} type="file" accept=".xlsx,.csv" className="field" />
