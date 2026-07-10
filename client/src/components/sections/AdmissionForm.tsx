@@ -110,6 +110,23 @@ const AdmissionForm = () => {
                 />
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-5 mt-5">
+                <FormField
+                  label="Father's Name"
+                  id="fatherName"
+                  placeholder="Father's full name"
+                  error={errors.fatherName?.message}
+                  {...register("fatherName", { required: "Please enter father's name." })}
+                />
+                <FormField
+                  label="Qualification"
+                  id="qualification"
+                  placeholder="e.g. 12th Pass, Graduate"
+                  error={errors.qualification?.message}
+                  {...register("qualification", { required: "Please enter your qualification." })}
+                />
+              </div>
+
               <div className="mt-5">
                 <FormField
                   label="Email Address"

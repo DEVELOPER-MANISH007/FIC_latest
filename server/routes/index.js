@@ -19,6 +19,8 @@ import adminExamRoutes from "./adminExam.routes.js";
 import adminStudentRoutes from "./adminStudent.routes.js";
 import adminResultRoutes from "./adminResult.routes.js";
 import adminDashboardRoutes from "./adminDashboard.routes.js";
+import adminAdmissionRoutes from "./adminAdmission.routes.js";
+import adminEnquiryRoutes from "./adminEnquiry.routes.js";
 
 const router = Router();
 
@@ -44,6 +46,8 @@ router.use("/admin/exams", adminExamRoutes);
 router.use("/admin/students", adminStudentRoutes);
 router.use("/admin/results", adminResultRoutes);
 router.use("/admin/dashboard", adminDashboardRoutes);
+router.use("/admin/admissions", adminAdmissionRoutes);
+router.use("/admin/enquiries", adminEnquiryRoutes);
 
 router.get("/health", (req, res) => {
   res.status(200).json({ success: true, message: "API is healthy", timestamp: new Date().toISOString() });

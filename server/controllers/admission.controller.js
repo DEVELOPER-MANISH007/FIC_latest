@@ -12,14 +12,16 @@ import { sendAdmissionNotification } from "../services/email.service.js";
  * @access  Public
  */
 export const createAdmission = asyncHandler(async (req, res) => {
-  const { name, phone, email, address, course, message } = req.body;
+  const { name, phone, email, fatherName, address, course, qualification, message } = req.body;
 
   const admission = await Admission.create({
     name,
     phone,
     email,
+    fatherName,
     address,
     course,
+    qualification,
     message,
   });
 

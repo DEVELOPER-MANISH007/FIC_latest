@@ -46,6 +46,7 @@ import {
   FiMenu,
   FiCheckCircle,
   FiChevronUp,
+  FiDownload,
 } from "react-icons/fi";
 import { FaWhatsapp, FaRupeeSign } from "react-icons/fa";
 
@@ -109,6 +110,7 @@ export const ICONS: Record<string, IconType> = {
   menu: FiMenu,
   checkCircle: FiCheckCircle,
   chevronUp: FiChevronUp,
+  download: FiDownload,
 };
 
 export const getIcon = (key: string): IconType => ICONS[key] || FiCheckCircle;

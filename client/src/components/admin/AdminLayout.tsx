@@ -13,9 +13,13 @@ const AwardIcon = getIcon("award");
 const TrendingUpIcon = getIcon("trendingUp");
 const LogOutIcon = getIcon("arrowRight");
 const MenuIcon = getIcon("menu");
+const CheckFileIcon = getIcon("checkFile");
+const MailIcon = getIcon("mail");
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: GridIcon },
+  { to: "/admin/admissions", label: "Admission Forms", icon: CheckFileIcon },
+  { to: "/admin/enquiries", label: "Enquiry Forms", icon: MailIcon },
   { to: "/admin/questions", label: "Question Bank", icon: FileTextIcon },
   { to: "/admin/categories", label: "Categories", icon: LayersIcon },
   { to: "/admin/exams", label: "Tests", icon: AwardIcon },

@@ -21,6 +21,13 @@ export const admissionValidationRules = [
     .isEmail()
     .withMessage("Please provide a valid email address"),
 
+  body("fatherName")
+    .trim()
+    .notEmpty()
+    .withMessage("Father's name is required")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Father's name must be between 2 and 100 characters"),
+
   body("address")
     .trim()
     .notEmpty()
@@ -29,6 +36,13 @@ export const admissionValidationRules = [
     .withMessage("Address cannot exceed 300 characters"),
 
   body("course").trim().notEmpty().withMessage("Please select an interested course"),
+
+  body("qualification")
+    .trim()
+    .notEmpty()
+    .withMessage("Qualification is required")
+    .isLength({ max: 150 })
+    .withMessage("Qualification cannot exceed 150 characters"),
 
   body("message")
     .optional({ checkFalsy: true })

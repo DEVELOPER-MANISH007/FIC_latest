@@ -9,6 +9,15 @@ const FileTextIcon = getIcon("fileText");
 const AwardIcon = getIcon("award");
 const ClockIcon = getIcon("clock");
 const TrendingUpIcon = getIcon("trendingUp");
+const CheckFileIcon = getIcon("checkFile");
+const MailIcon = getIcon("mail");
+
+const ADMISSION_CARD_CONFIG = [
+  { key: "totalAdmissions", label: "Total Admissions", icon: CheckFileIcon },
+  { key: "totalEnquiries", label: "Total Enquiries", icon: MailIcon },
+  { key: "todaysAdmissions", label: "Today's Admissions", icon: ClockIcon },
+  { key: "todaysEnquiries", label: "Today's Enquiries", icon: ClockIcon },
+] as const;
 
 const CARD_CONFIG = [
   { key: "totalStudents", label: "Total Students", icon: UsersIcon },
@@ -27,6 +36,18 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout title="Dashboard">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {ADMISSION_CARD_CONFIG.map((card) => (
+          <div key={card.key} className="card p-6">
+            <div className="icon-wrap mb-4">
+              <card.icon size={20} />
+            </div>
+            <p className="font-display font-bold text-2xl">{stats ? stats[card.key] : "—"}</p>
+            <p className="text-[12.5px] text-[var(--ink-soft)] mt-1">{card.label}</p>
+          </div>
+        ))}
+      </div>
+
       <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-10">
         {CARD_CONFIG.map((card) => (
           <div key={card.key} className="card p-6">

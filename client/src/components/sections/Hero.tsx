@@ -1,16 +1,13 @@
 import { motion } from "framer-motion";
 import { SITE, TRUST_BADGES } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
-import building from "@/assets/images/building.jpg";
+import HeroSlider from "./HeroSlider";
 
 const ArrowRightIcon = getIcon("arrowRight");
 
 const Hero = () => (
-  <section
-    id="home"
-    className="hero-wrap flex items-center"
-    style={{ ["--hero-image" as string]: `url(${building})` }}
-  >
+  <section id="home" className="hero-wrap flex items-center">
+    <HeroSlider />
     <div className="hero-bg" />
     <div className="absolute w-72 h-72 rounded-full bg-[var(--orange)]/20 blur-3xl top-24 right-10 float-el" />
     <div className="absolute w-56 h-56 rounded-full bg-[var(--royal)]/30 blur-3xl bottom-24 left-0 float-el delay1" />

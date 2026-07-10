@@ -2,27 +2,25 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import isServerless from "../utils/isServerless.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, "..", "uploads");
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const getUploadDir = () => {
+  if (isServerless()) {
+    return path.join("/tmp", "fic-uploads");
+  }
+  return path.join(__dirname, "..", "uploads");
+};
 
-/**
- * Local disk storage for uploaded images (faculty/gallery/course icons).
- * When Cloudinary credentials are configured, controllers can additionally
- * push the stored file to Cloudinary — see config/cloudinary.js.
- */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
-});
+const ensureUploadDir = () => {
+  const uploadDir = getUploadDir();
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  return uploadDir;
+};
 
 const fileFilter = (req, file, cb) => {
   const allowed = /jpeg|jpg|png|webp|gif/;
@@ -31,6 +29,26 @@ const fileFilter = (req, file, cb) => {
   cb(new Error("Only image files (jpg, jpeg, png, webp, gif) are allowed"));
 };
 
+const storage = isServerless()
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (req, file, cb) => {
+        try {
+          cb(null, ensureUploadDir());
+        } catch (error) {
+          cb(error);
+        }
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+      },
+    });
+
+/**
+ * Image uploads for faculty/gallery/course icons.
+ * Uses memory storage on Vercel; local disk in development.
+ */
 const upload = multer({
   storage,
   fileFilter,

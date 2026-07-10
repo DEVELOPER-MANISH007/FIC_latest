@@ -28,6 +28,8 @@ import ResultPage from "@/pages/student/ResultPage";
 
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminAdmissions from "@/pages/admin/AdminAdmissions";
+import AdminEnquiries from "@/pages/admin/AdminEnquiries";
 import AdminQuestions from "@/pages/admin/AdminQuestions";
 import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminExams from "@/pages/admin/AdminExams";
@@ -91,6 +93,8 @@ const App = () => (
             <Route element={<AdminProtectedRoute />}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/admissions" element={<AdminAdmissions />} />
+              <Route path="/admin/enquiries" element={<AdminEnquiries />} />
               <Route path="/admin/questions" element={<AdminQuestions />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/exams" element={<AdminExams />} />

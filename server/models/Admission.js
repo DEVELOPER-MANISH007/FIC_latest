@@ -21,6 +21,12 @@ const AdmissionSchema = new mongoose.Schema(
       default: "",
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
     },
+    fatherName: {
+      type: String,
+      required: [true, "Father's name is required"],
+      trim: true,
+      maxlength: [100, "Father's name cannot exceed 100 characters"],
+    },
     address: {
       type: String,
       required: [true, "Address is required"],
@@ -32,6 +38,12 @@ const AdmissionSchema = new mongoose.Schema(
       required: [true, "Interested course is required"],
       trim: true,
     },
+    qualification: {
+      type: String,
+      required: [true, "Qualification is required"],
+      trim: true,
+      maxlength: [150, "Qualification cannot exceed 150 characters"],
+    },
     message: {
       type: String,
       trim: true,
@@ -40,7 +52,7 @@ const AdmissionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "contacted", "enrolled", "closed"],
+      enum: ["new", "contacted", "admitted", "closed"],
       default: "new",
     },
   },

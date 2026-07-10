@@ -3,6 +3,8 @@ import Question from "../models/Question.js";
 import Exam from "../models/Exam.js";
 import ExamAttempt from "../models/ExamAttempt.js";
 import Result from "../models/Result.js";
+import Admission from "../models/Admission.js";
+import Contact from "../models/Contact.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
@@ -10,21 +12,35 @@ import ApiResponse from "../utils/ApiResponse.js";
  * @route GET /api/admin/dashboard
  * @desc  Summary cards for the Admin Dashboard: Total Students,
  *        Total Questions, Total Tests, Today's Attempts, Average Score,
- *        Recent Registrations.
+ *        Recent Registrations, Total/Today's Admissions & Enquiries.
  */
 export const getDashboardStats = asyncHandler(async (req, res) => {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  const [totalStudents, totalQuestions, totalTests, todaysAttempts, avgScoreAgg, recentRegistrations] =
-    await Promise.all([
-      Student.countDocuments(),
-      Question.countDocuments(),
-      Exam.countDocuments(),
-      ExamAttempt.countDocuments({ createdAt: { $gte: startOfToday } }),
-      Result.aggregate([{ $group: { _id: null, avg: { $avg: "$percentage" } } }]),
-      Student.find().sort({ createdAt: -1 }).limit(5).select("name email course createdAt"),
-    ]);
+  const [
+    totalStudents,
+    totalQuestions,
+    totalTests,
+    todaysAttempts,
+    avgScoreAgg,
+    recentRegistrations,
+    totalAdmissions,
+    totalEnquiries,
+    todaysAdmissions,
+    todaysEnquiries,
+  ] = await Promise.all([
+    Student.countDocuments(),
+    Question.countDocuments(),
+    Exam.countDocuments(),
+    ExamAttempt.countDocuments({ createdAt: { $gte: startOfToday } }),
+    Result.aggregate([{ $group: { _id: null, avg: { $avg: "$percentage" } } }]),
+    Student.find().sort({ createdAt: -1 }).limit(5).select("name email course createdAt"),
+    Admission.countDocuments(),
+    Contact.countDocuments(),
+    Admission.countDocuments({ createdAt: { $gte: startOfToday } }),
+    Contact.countDocuments({ createdAt: { $gte: startOfToday } }),
+  ]);
 
   return res.status(200).json(
     new ApiResponse(200, {
@@ -34,6 +50,10 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       todaysAttempts,
       averageScore: avgScoreAgg[0] ? Math.round(avgScoreAgg[0].avg * 100) / 100 : 0,
       recentRegistrations,
+      totalAdmissions,
+      totalEnquiries,
+      todaysAdmissions,
+      todaysEnquiries,
     })
   );
 });
