@@ -1,10 +1,10 @@
 import api from "./axiosInstance";
-import type { ApiResponse, AttemptPaper, ExamResult, ResultReviewItem } from "@/types";
+import type { ApiResponse, AttemptPaper, StudentResultSummary } from "@/types";
 
 export const fetchAttempt = async (attemptId: string) => {
-  const res = await api.get<ApiResponse<AttemptPaper | { autoSubmitted: true; resultId: string }>>(
-    `/attempts/${attemptId}`
-  );
+  const res = await api.get<
+    ApiResponse<AttemptPaper | { autoSubmitted: true; resultId: string } | { submitted: true; resultId: string }>
+  >(`/attempts/${attemptId}`);
   return res.data.data;
 };
 
@@ -22,13 +22,11 @@ export const submitAttempt = async (attemptId: string) => {
 };
 
 export const fetchResult = async (resultId: string) => {
-  const res = await api.get<ApiResponse<{ result: ExamResult; review: ResultReviewItem[] | null }>>(
-    `/attempts/results/${resultId}`
-  );
+  const res = await api.get<ApiResponse<StudentResultSummary>>(`/attempts/results/${resultId}`);
   return res.data.data;
 };
 
 export const fetchMyResults = async () => {
-  const res = await api.get<ApiResponse<ExamResult[]>>("/attempts/results/mine");
+  const res = await api.get<ApiResponse<StudentResultSummary[]>>("/attempts/results/mine");
   return res.data.data;
 };

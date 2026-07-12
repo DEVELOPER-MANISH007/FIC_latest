@@ -2,22 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import StudentLayout from "@/components/student/StudentLayout";
 import { fetchMyResults } from "@/services/api/attempt.service";
-import type { ExamResult } from "@/types";
-
-const examNameOf = (r: ExamResult) => (typeof r.exam === "string" ? "Test" : r.exam?.name || "Test (removed)");
-
-const formatTime = (seconds: number) => {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
-};
+import type { StudentResultSummary } from "@/types";
 
 /**
  * Attempted Tests — every submitted attempt with score, time taken and a
- * link to the detailed result page.
+ * link to the summary-only result page.
  */
 const StudentAttempted = () => {
-  const [results, setResults] = useState<ExamResult[]>([]);
+  const [results, setResults] = useState<StudentResultSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,8 +43,8 @@ const StudentAttempted = () => {
               </thead>
               <tbody>
                 {results.map((r) => (
-                  <tr key={r._id} className="border-b border-[var(--line)] last:border-0 text-[13.5px]">
-                    <td className="px-6 py-4 font-medium">{examNameOf(r)}</td>
+                  <tr key={r.resultId} className="border-b border-[var(--line)] last:border-0 text-[13.5px]">
+                    <td className="px-6 py-4 font-medium">{r.examName || "Test (removed)"}</td>
                     <td className="px-6 py-4 text-[var(--ink-soft)]">
                       {new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
                     </td>
@@ -60,18 +52,18 @@ const StudentAttempted = () => {
                       {r.correct}/{r.totalQuestions}
                     </td>
                     <td className="px-6 py-4">{Math.round(r.percentage)}%</td>
-                    <td className="px-6 py-4 text-[var(--ink-soft)]">{formatTime(r.timeTakenSeconds)}</td>
+                    <td className="px-6 py-4 text-[var(--ink-soft)]">{r.timeTaken}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`text-[11.5px] font-semibold px-3 py-1 rounded-full ${
-                          r.isPassed ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+                          r.status === "PASS" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
                         }`}
                       >
-                        {r.isPassed ? "Pass" : "Fail"}
+                        {r.status === "PASS" ? "Pass" : "Fail"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <Link to={`/result/${r._id}`} className="text-[12.5px] text-[var(--royal)] font-semibold hover:underline">
+                      <Link to={`/result/${r.resultId}`} className="text-[12.5px] text-[var(--royal)] font-semibold hover:underline">
                         View Result
                       </Link>
                     </td>

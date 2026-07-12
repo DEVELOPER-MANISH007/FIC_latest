@@ -263,13 +263,24 @@ export interface ExamResult {
   createdAt: string;
 }
 
-export interface ResultReviewItem {
-  question: string;
-  options: { A: string; B: string; C: string; D: string };
-  correctAnswer: string;
-  selectedAnswer: string | null;
-  isCorrect: boolean | null;
-  explanation: string;
+/** Summary-only result returned to students — never contains answers or review data. */
+export interface StudentResultSummary {
+  resultId: string;
+  examId: string | null;
+  examName: string | null;
+  totalQuestions: number;
+  attempted: number;
+  correct: number;
+  wrong: number;
+  unattempted: number;
+  score: number;
+  totalMarks: number;
+  percentage: number;
+  timeTaken: string;
+  timeTakenSeconds: number;
+  status: "PASS" | "FAIL";
+  rank: number | null;
+  createdAt: string;
 }
 
 export interface AdminDashboardStats {

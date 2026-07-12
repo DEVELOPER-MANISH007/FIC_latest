@@ -8,6 +8,51 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { shuffleArray, shuffleOptionOrder } from "../utils/shuffle.js";
 
+/** Formats seconds as MM:SS for the student result summary. */
+const formatTimeTaken = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
+
+/**
+ * Student-facing result payload — summary only, never includes answers,
+ * explanations, attempt IDs, or per-question review data.
+ */
+const buildStudentResultSummary = async (result) => {
+  const examId = result.exam?._id || result.exam;
+  let rank = null;
+
+  if (examId) {
+    const betterCount = await Result.countDocuments({
+      exam: examId,
+      percentage: { $gt: result.percentage },
+    });
+    rank = betterCount + 1;
+  }
+
+  const attempted = result.correct + result.wrong;
+
+  return {
+    resultId: result._id,
+    examId: examId || null,
+    examName: result.exam?.name || null,
+    totalQuestions: result.totalQuestions,
+    attempted,
+    correct: result.correct,
+    wrong: result.wrong,
+    unattempted: result.skipped,
+    score: result.obtainedMarks,
+    totalMarks: result.totalMarks,
+    percentage: result.percentage,
+    timeTaken: formatTimeTaken(result.timeTakenSeconds),
+    timeTakenSeconds: result.timeTakenSeconds,
+    status: result.isPassed ? "PASS" : "FAIL",
+    rank,
+    createdAt: result.createdAt,
+  };
+};
+
 /** Builds the student-facing view of a paper — never includes correctAnswer. */
 const buildPaperView = (attempt) => ({
   attemptId: attempt._id,
@@ -225,6 +270,13 @@ export const getAttempt = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { autoSubmitted: true, resultId: result._id }, "Time expired — test auto-submitted"));
   }
 
+  if (attempt.status !== "in-progress") {
+    const result = await Result.findOne({ attempt: attempt._id });
+    return res.status(200).json(
+      new ApiResponse(200, { submitted: true, resultId: result?._id }, "This test has already been submitted")
+    );
+  }
+
   return res.status(200).json(new ApiResponse(200, buildPaperView(attempt)));
 });
 
@@ -274,34 +326,16 @@ export const submitAttempt = asyncHandler(async (req, res) => {
 });
 
 /**
- * @route GET /api/results/:resultId
- * @access Student (owner only) — includes explanation review if the
- *         exam has showExplanationAfterSubmit enabled.
+ * @route GET /api/attempts/results/:resultId
+ * @access Student (owner only) — summary only; never exposes answers or review data.
  */
 export const getResultById = asyncHandler(async (req, res) => {
-  const result = await Result.findById(req.params.resultId).populate("exam");
+  const result = await Result.findById(req.params.resultId).populate("exam", "name");
   if (!result) throw new ApiError(404, "Result not found");
   if (String(result.student) !== String(req.student._id)) throw new ApiError(403, "Not authorized");
 
-  let review = null;
-  if (result.exam?.showExplanationAfterSubmit) {
-    const attempt = await ExamAttempt.findById(result.attempt).populate("questions.question");
-    review = attempt.questions.map((aq) => {
-      const q = aq.question;
-      const displayIndex = aq.selectedAnswer ? "ABCD".indexOf(aq.selectedAnswer) : -1;
-      const selectedOriginalLetter = displayIndex >= 0 ? aq.optionOrder[displayIndex] : null;
-      return {
-        question: q.question,
-        options: { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD },
-        correctAnswer: q.correctAnswer,
-        selectedAnswer: selectedOriginalLetter,
-        isCorrect: aq.isCorrect,
-        explanation: q.explanation || "",
-      };
-    });
-  }
-
-  return res.status(200).json(new ApiResponse(200, { result, review }));
+  const summary = await buildStudentResultSummary(result);
+  return res.status(200).json(new ApiResponse(200, summary));
 });
 
 /**
@@ -310,6 +344,7 @@ export const getResultById = asyncHandler(async (req, res) => {
  * @access Student
  */
 export const getMyResults = asyncHandler(async (req, res) => {
-  const results = await Result.find({ student: req.student._id }).populate("exam", "name topic").sort({ createdAt: -1 });
-  return res.status(200).json(new ApiResponse(200, results));
+  const results = await Result.find({ student: req.student._id }).populate("exam", "name").sort({ createdAt: -1 });
+  const summaries = await Promise.all(results.map((r) => buildStudentResultSummary(r)));
+  return res.status(200).json(new ApiResponse(200, summaries));
 });

@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { fetchActiveExams, startExamAttempt } from "@/services/api/exam.service";
 import { fetchMyResults } from "@/services/api/attempt.service";
 import { getIcon } from "@/constants/iconMap";
-import type { ExamConfig, ExamResult } from "@/types";
+import type { ExamConfig, StudentResultSummary } from "@/types";
 
 const BookIcon = getIcon("bookOpen");
 const AwardIcon = getIcon("award");
@@ -13,7 +13,7 @@ const CheckIcon = getIcon("checkCircle");
 const ClockIcon = getIcon("clock");
 const TrendingUpIcon = getIcon("trendingUp");
 
-const examIdOf = (r: ExamResult) => (typeof r.exam === "string" ? r.exam : r.exam?._id || "");
+const examIdOf = (r: StudentResultSummary) => r.examId || "";
 
 /** % of profile fields the student has filled in. */
 const profileCompletion = (student: ReturnType<typeof useAuth>["student"]) => {
@@ -27,7 +27,7 @@ const StudentDashboard = () => {
   const { student } = useAuth();
   const navigate = useNavigate();
   const [exams, setExams] = useState<ExamConfig[]>([]);
-  const [results, setResults] = useState<ExamResult[]>([]);
+  const [results, setResults] = useState<StudentResultSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -131,17 +131,17 @@ const StudentDashboard = () => {
             {loading ? (
               <div className="card p-6 h-28 ph" />
             ) : latestResult ? (
-              <Link to={`/result/${latestResult._id}`} className="card p-6 flex items-center justify-between gap-4 block hover:!translate-y-[-2px]">
+              <Link to={`/result/${latestResult.resultId}`} className="card p-6 flex items-center justify-between gap-4 block hover:!translate-y-[-2px]">
                 <div>
                   <p className="font-display font-semibold text-[15px]">
-                    {typeof latestResult.exam === "string" ? "Test" : latestResult.exam?.name || "Test (removed)"}
+                    {latestResult.examName || "Test (removed)"}
                   </p>
                   <p className="text-[12.5px] text-[var(--ink-soft)] mt-1">
                     {latestResult.correct}/{latestResult.totalQuestions} correct · {latestResult.percentage}%
                   </p>
                 </div>
-                <span className={`text-[12px] font-semibold px-3 py-1.5 rounded-full ${latestResult.isPassed ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
-                  {latestResult.isPassed ? "Pass" : "Fail"}
+                <span className={`text-[12px] font-semibold px-3 py-1.5 rounded-full ${latestResult.status === "PASS" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                  {latestResult.status === "PASS" ? "Pass" : "Fail"}
                 </span>
               </Link>
             ) : (
@@ -208,10 +208,10 @@ const StudentDashboard = () => {
               <div>
                 <div className="flex items-end gap-3 h-48" role="img" aria-label={`Bar chart of your last ${chartData.length} test scores`}>
                   {chartData.map((r) => (
-                    <div key={r._id} className="flex-1 flex flex-col items-center gap-2 min-w-0">
+                    <div key={r.resultId} className="flex-1 flex flex-col items-center gap-2 min-w-0">
                       <span className="text-[11px] font-semibold text-[var(--ink-soft)]">{Math.round(r.percentage)}%</span>
                       <div
-                        className={`w-full max-w-12 rounded-t-lg ${r.isPassed ? "bg-[var(--royal)]" : "bg-red-300"}`}
+                        className={`w-full max-w-12 rounded-t-lg ${r.status === "PASS" ? "bg-[var(--royal)]" : "bg-red-300"}`}
                         style={{ height: `${Math.max(r.percentage, 4)}%` }}
                       />
                       <span className="text-[10px] text-[var(--ink-soft)] truncate w-full text-center">

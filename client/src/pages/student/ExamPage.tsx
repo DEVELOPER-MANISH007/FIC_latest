@@ -10,6 +10,9 @@ import { cn } from "@/utils/cn";
 
 const isPaper = (data: any): data is AttemptPaper => data && Array.isArray(data.questions);
 
+const isRedirect = (data: any): data is { resultId: string } =>
+  data && typeof data.resultId === "string" && ("autoSubmitted" in data || "submitted" in data);
+
 const ExamPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
@@ -24,7 +27,7 @@ const ExamPage = () => {
     const data = await fetchAttempt(attemptId);
     if (isPaper(data)) {
       setPaper(data);
-    } else if (data && "resultId" in data) {
+    } else if (isRedirect(data)) {
       navigate(`/result/${data.resultId}`, { replace: true });
     }
     setLoading(false);
