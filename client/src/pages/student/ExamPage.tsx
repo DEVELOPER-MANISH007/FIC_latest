@@ -153,7 +153,10 @@ const ExamPage = () => {
 
   const persistAnswer = async (updates: PendingAnswer) => {
     if (!attemptId || isLocked) return;
-    const fullUpdate = { questionIndex: currentIndex, ...updates };
+    const fullUpdate: { questionIndex: number; selectedAnswer?: "A" | "B" | "C" | "D" | null; isMarkedForReview?: boolean } = {
+      questionIndex: currentIndex,
+      ...updates,
+    };
     setPaper((prev) => {
       if (!prev) return prev;
       const questions = [...prev.questions];
