@@ -21,7 +21,11 @@ const isPaper = (data: any): data is AttemptPaper => data && Array.isArray(data.
 
 const OFFLINE_QUEUE_PREFIX = "exam-offline-queue:";
 
-type PendingAnswer = { questionIndex: number; selectedAnswer?: string | null; isMarkedForReview?: boolean };
+type PendingAnswer = {
+  questionIndex?: number;
+  selectedAnswer?: "A" | "B" | "C" | "D" | null;
+  isMarkedForReview?: boolean;
+};
 
 const ExamPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();

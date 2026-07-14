@@ -3,33 +3,27 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/auth/AuthLayout";
 import FormField from "@/components/common/FormField";
-import { useAuth } from "@/context/AuthContext";
 import { COURSE_OPTIONS } from "@/constants/siteData";
-import type { SignupFormData } from "@/types";
+import type { StudentSignupData } from "@/types/portal";
 
 const StudentSignup = () => {
-  const { signup } = useAuth();
   const navigate = useNavigate();
-  const [serverError, setServerError] = useState("");
+  const [serverError, setServerError] = useState(
+    "Student self-registration is disabled. Please contact your administrator to create your account."
+  );
   const [loading, setLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormData>();
+  } = useForm<StudentSignupData>();
 
-  const onSubmit = async (data: SignupFormData) => {
-    setServerError("");
-    setLoading(true);
-    try {
-      await signup(data);
-      navigate("/dashboard", { replace: true });
-    } catch (err: any) {
-      setServerError(err?.response?.data?.message || "Could not create your account. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (_: StudentSignupData) => {
+    setServerError(
+      "Student self-registration is disabled. Please contact your administrator to create your account."
+    );
+    setLoading(false);
   };
 
   return (
