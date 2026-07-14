@@ -9,9 +9,11 @@ const publicStudent = (student) => ({
   id: student._id,
   name: student.name,
   email: student.email,
+  username: student.username || "",
   phone: student.phone,
   address: student.address,
   course: student.course,
+  batch: student.batch || "",
   photo: student.photo || "",
   studentIdCode: student.studentIdCode || "",
   isActive: student.isActive,
@@ -30,7 +32,7 @@ export const getStudents = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.keyword) {
     const re = new RegExp(req.query.keyword, "i");
-    filter.$or = [{ name: re }, { email: re }, { phone: re }, { course: re }];
+    filter.$or = [{ name: re }, { email: re }, { username: re }, { phone: re }, { course: re }, { batch: re }];
   }
 
   const [items, total] = await Promise.all([
@@ -59,9 +61,88 @@ export const getStudentProfile = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { student: publicStudent(student), results }));
 });
 
+/** Shared uniqueness check for email/username on create + update. */
+const assertUnique = async (field, value, excludeId) => {
+  if (!value) return;
+  const query = { [field]: value.toLowerCase(), ...(excludeId ? { _id: { $ne: excludeId } } : {}) };
+  const taken = await Student.findOne(query);
+  if (taken) throw new ApiError(409, `An account with this ${field} already exists`);
+};
+
+/**
+ * @route POST /api/admin/students
+ * @desc  Admin-only student account creation (#9 — public self-registration
+ *        has been removed; this is now the only way a student account gets
+ *        made). Password is hashed by the same Student pre("save") hook
+ *        used everywhere else — never hashed here manually.
+ * @access Admin only (protectAdmin applied at the router level)
+ */
+export const createStudent = asyncHandler(async (req, res) => {
+  const { name, email, phone, password, username, course, batch, address, isActive } = req.body;
+
+  if (!name?.trim()) throw new ApiError(400, "Name is required");
+  if (!email?.trim()) throw new ApiError(400, "Email is required");
+  if (!phone?.trim()) throw new ApiError(400, "Mobile number is required");
+  if (!password || password.length < 6) throw new ApiError(400, "Password must be at least 6 characters");
+
+  await assertUnique("email", email);
+  if (username?.trim()) await assertUnique("username", username);
+
+  const student = await Student.create({
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    phone: phone.trim(),
+    password,
+    ...(username?.trim() ? { username: username.trim().toLowerCase() } : {}),
+    course: course?.trim() || "",
+    batch: batch?.trim() || "",
+    address: address?.trim() || "",
+    isActive: isActive ?? true,
+    createdBy: req.admin?._id,
+  });
+
+  return res.status(201).json(new ApiResponse(201, publicStudent(student), "Student account created"));
+});
+
+/**
+ * @route PUT /api/admin/students/:id
+ * @desc  Admin edits a student's profile fields. Password is intentionally
+ *        NOT editable here — use PATCH /:id/reset-password for that, which
+ *        keeps password changes on one clearly-audited code path.
+ * @access Admin only
+ */
+export const updateStudent = asyncHandler(async (req, res) => {
+  const { name, email, phone, username, course, batch, address, isActive } = req.body;
+
+  const student = await Student.findById(req.params.id);
+  if (!student) throw new ApiError(404, "Student not found");
+
+  if (email !== undefined && email.trim().toLowerCase() !== student.email) {
+    await assertUnique("email", email, student._id);
+    student.email = email.trim().toLowerCase();
+  }
+  if (username !== undefined) {
+    const next = username.trim().toLowerCase();
+    if (next && next !== student.username) {
+      await assertUnique("username", next, student._id);
+    }
+    student.username = next || undefined;
+  }
+
+  if (name !== undefined) student.name = name.trim();
+  if (phone !== undefined) student.phone = phone.trim();
+  if (course !== undefined) student.course = course.trim();
+  if (batch !== undefined) student.batch = batch.trim();
+  if (address !== undefined) student.address = address.trim();
+  if (isActive !== undefined) student.isActive = isActive;
+
+  await student.save();
+  return res.status(200).json(new ApiResponse(200, publicStudent(student), "Student updated"));
+});
+
 /**
  * @route PATCH /api/admin/students/:id/disable
- * @desc  Toggle a student account's active/disabled state.
+ * @desc  Toggle (Activate/Deactivate) a student account's active state.
  */
 export const toggleStudentStatus = asyncHandler(async (req, res) => {
   const student = await Student.findById(req.params.id);
@@ -73,6 +154,30 @@ export const toggleStudentStatus = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, publicStudent(student), student.isActive ? "Account enabled" : "Account disabled"));
+});
+
+/**
+ * @route PATCH /api/admin/students/:id/reset-password
+ * @desc  Admin sets a new password for a student who can't sign in
+ *        (forgot password) — no old password required. Hashed by the same
+ *        pre-save hook used at account creation, so the student can log in
+ *        immediately with the new password.
+ * @access Admin only (protectAdmin applied at the router level)
+ */
+export const resetStudentPassword = asyncHandler(async (req, res) => {
+  const { newPassword } = req.body;
+
+  if (!newPassword || newPassword.length < 6) {
+    throw new ApiError(400, "New password must be at least 6 characters");
+  }
+
+  const student = await Student.findById(req.params.id);
+  if (!student) throw new ApiError(404, "Student not found");
+
+  student.password = newPassword; // pre("save") hook on Student hashes this with bcrypt
+  await student.save();
+
+  return res.status(200).json(new ApiResponse(200, null, "Password reset successfully"));
 });
 
 /**

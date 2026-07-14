@@ -29,6 +29,36 @@ const ExamAttemptSchema = new mongoose.Schema(
     expiresAt: { type: Date, required: true },
     submittedAt: { type: Date, default: null },
     status: { type: String, enum: ["in-progress", "submitted", "expired"], default: "in-progress" },
+
+    // ---- Suspicious Activity Log (anti-cheating) ----
+    violations: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: [
+              "fullscreen-exit",
+              "tab-switch",
+              "window-blur",
+              "refresh-attempt",
+              "devtools-detected",
+              "copy-paste-attempt",
+              "other",
+            ],
+            required: true,
+          },
+          occurredAt: { type: Date, default: Date.now },
+          meta: { type: String, default: "" },
+          // Captured server-side from the request header (not trusted from
+          // the client body) so the Suspicious Activity Log always shows a
+          // genuine browser identifier.
+          userAgent: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+    violationCount: { type: Number, default: 0 },
+    autoSubmitReason: { type: String, default: "" }, // "time-expired" | "max-violations" | ""
   },
   { timestamps: true }
 );

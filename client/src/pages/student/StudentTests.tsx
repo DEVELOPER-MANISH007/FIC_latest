@@ -4,12 +4,12 @@ import StudentLayout from "@/components/student/StudentLayout";
 import { fetchActiveExams, startExamAttempt } from "@/services/api/exam.service";
 import { fetchMyResults } from "@/services/api/attempt.service";
 import { getIcon } from "@/constants/iconMap";
-import type { ExamConfig, StudentResultSummary } from "@/types";
+import type { ExamConfig, ExamResult } from "@/types";
 
 const ClockIcon = getIcon("clock");
 const FileTextIcon = getIcon("fileText");
 
-const examIdOf = (r: StudentResultSummary) => r.examId || "";
+const examIdOf = (r: ExamResult) => (typeof r.exam === "string" ? r.exam : r.exam?._id || "");
 
 /**
  * Available Tests — every active test with duration, question count and a
@@ -19,7 +19,7 @@ const examIdOf = (r: StudentResultSummary) => r.examId || "";
 const StudentTests = () => {
   const navigate = useNavigate();
   const [exams, setExams] = useState<ExamConfig[]>([]);
-  const [results, setResults] = useState<StudentResultSummary[]>([]);
+  const [results, setResults] = useState<ExamResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [error, setError] = useState("");

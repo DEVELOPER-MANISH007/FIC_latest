@@ -139,11 +139,14 @@ export interface StudentUser {
   id: string;
   name: string;
   email: string;
+  username?: string;
   phone: string;
   address?: string;
   course?: string;
+  batch?: string;
   photo?: string;
   studentIdCode?: string;
+  isActive?: boolean;
   createdAt?: string;
 }
 
@@ -154,16 +157,8 @@ export interface AdminUser {
   role: "admin" | "superadmin";
 }
 
-export interface SignupFormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  address?: string;
-  course?: string;
-}
-
 export interface LoginFormData {
+  /** Accepts either the student's email address or their assigned username. */
   email: string;
   password: string;
   remember?: boolean;
@@ -218,6 +213,12 @@ export interface ExamConfig {
   showExplanationAfterSubmit: boolean;
   isActive: boolean;
   createdAt: string;
+  // Secure Exam Mode / anti-cheating configuration
+  fullscreenRequired?: boolean;
+  tabSwitchDetectionEnabled?: boolean;
+  maxViolations?: number;
+  autoSubmitOnMaxViolations?: boolean;
+  calculatorEnabled?: boolean;
 }
 
 export interface PaperOption {
@@ -235,14 +236,34 @@ export interface PaperQuestion {
   marks: number;
 }
 
+export interface ExamSecuritySettings {
+  fullscreenRequired: boolean;
+  tabSwitchDetectionEnabled: boolean;
+  maxViolations: number;
+  autoSubmitOnMaxViolations: boolean;
+  calculatorEnabled: boolean;
+}
+
 export interface AttemptPaper {
   attemptId: string;
-  exam: string | ExamConfig;
+  examName: string;
+  studentName: string;
   startedAt: string;
   expiresAt: string;
   status: "in-progress" | "submitted" | "expired";
+  violationCount: number;
+  settings: ExamSecuritySettings;
   questions: PaperQuestion[];
 }
+
+export type ViolationType =
+  | "fullscreen-exit"
+  | "tab-switch"
+  | "window-blur"
+  | "refresh-attempt"
+  | "devtools-detected"
+  | "copy-paste-attempt"
+  | "other";
 
 export interface ExamResult {
   _id: string;
@@ -263,23 +284,16 @@ export interface ExamResult {
   createdAt: string;
 }
 
-/** Summary-only result returned to students — never contains answers or review data. */
-export interface StudentResultSummary {
-  resultId: string;
-  examId: string | null;
-  examName: string | null;
-  totalQuestions: number;
-  attempted: number;
-  correct: number;
-  wrong: number;
-  unattempted: number;
-  score: number;
-  totalMarks: number;
-  percentage: number;
-  timeTaken: string;
-  timeTakenSeconds: number;
-  status: "PASS" | "FAIL";
-  rank: number | null;
+export interface AttemptLogItem {
+  _id: string;
+  student: { _id: string; name: string; email?: string } | null;
+  exam: { _id: string; name: string; maxViolations?: number } | null;
+  status: "in-progress" | "submitted" | "expired";
+  violationCount: number;
+  violations: { type: ViolationType; occurredAt: string; meta?: string; userAgent?: string }[];
+  autoSubmitReason?: string;
+  startedAt: string;
+  submittedAt: string | null;
   createdAt: string;
 }
 
@@ -299,4 +313,71 @@ export interface AdminDashboardStats {
 export interface PaginatedResponse<T> {
   items: T[];
   pagination: { page: number; limit: number; total: number; pages: number };
+}
+
+// ==========================================================
+// Study Material Management
+// ==========================================================
+
+export interface StudySubject {
+  _id: string;
+  name: string;
+  isActive?: boolean;
+}
+
+export interface StudyCourseItem {
+  _id: string;
+  name: string;
+  description?: string;
+  isActive?: boolean;
+  subjects: StudySubject[];
+}
+
+export const STUDY_MATERIAL_CATEGORIES = [
+  "Notes",
+  "Assignments",
+  "Practice Questions",
+  "Previous Year Papers",
+  "Cheat Sheets",
+  "Projects",
+  "Code Examples",
+  "Interview Questions",
+] as const;
+
+export type StudyMaterialCategory = (typeof STUDY_MATERIAL_CATEGORIES)[number];
+
+export const STUDY_MATERIAL_DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"] as const;
+export type StudyMaterialDifficulty = (typeof STUDY_MATERIAL_DIFFICULTIES)[number];
+
+export type StudyMaterialVisibility = "public" | "enrolled";
+export type StudyMaterialFileType = "pdf" | "zip" | "docx" | "ppt" | "image" | "file";
+
+export interface StudyMaterialItem {
+  _id: string;
+  title: string; // Topic / Notes title
+  description?: string;
+  subject: string;
+  unit: string;
+  fileUrl: string;
+  fileType: StudyMaterialFileType;
+  fileName?: string;
+  fileSize: number;
+  visibility: StudyMaterialVisibility;
+  downloadCount: number;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  // Present on the student-facing /materials endpoints only: true when this
+  // is Enrolled-Only material the current student isn't entitled to yet —
+  // fileUrl/filePublicId are stripped server-side when this is set.
+  locked?: boolean;
+  // Legacy (pre Subject/Topic/Unit redesign) — optional, may be present on
+  // older records only. No longer used by the current upload form.
+  course?: string;
+  courseName?: string;
+  subjectId?: string;
+  subjectName?: string;
+  category?: StudyMaterialCategory | "";
+  module?: string;
+  difficulty?: StudyMaterialDifficulty | "";
 }

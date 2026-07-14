@@ -47,6 +47,18 @@ import {
   FiCheckCircle,
   FiChevronUp,
   FiDownload,
+  FiSearch,
+  FiFilter,
+  FiUploadCloud,
+  FiEye,
+  FiEdit2,
+  FiTrash2,
+  FiFile,
+  FiFolder,
+  FiHardDrive,
+  FiCalendar,
+  FiSettings,
+  FiLock,
 } from "react-icons/fi";
 import { FaWhatsapp, FaRupeeSign } from "react-icons/fa";
 
@@ -111,6 +123,18 @@ export const ICONS: Record<string, IconType> = {
   checkCircle: FiCheckCircle,
   chevronUp: FiChevronUp,
   download: FiDownload,
+  search: FiSearch,
+  filter: FiFilter,
+  uploadCloud: FiUploadCloud,
+  eye: FiEye,
+  edit: FiEdit2,
+  trash: FiTrash2,
+  file: FiFile,
+  folder: FiFolder,
+  hardDrive: FiHardDrive,
+  calendar: FiCalendar,
+  settings: FiSettings,
+  lock: FiLock,
 };
 
 export const getIcon = (key: string): IconType => ICONS[key] || FiCheckCircle;

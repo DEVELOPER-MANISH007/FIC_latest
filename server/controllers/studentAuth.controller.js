@@ -9,43 +9,36 @@ const publicStudent = (student) => ({
   id: student._id,
   name: student.name,
   email: student.email,
+  username: student.username || "",
   phone: student.phone,
   address: student.address,
   course: student.course,
+  batch: student.batch || "",
   photo: student.photo || "",
   studentIdCode: student.studentIdCode || "",
   createdAt: student.createdAt,
 });
 
-/**
- * @route POST /api/student/auth/signup
- */
-export const signup = asyncHandler(async (req, res) => {
-  const { name, email, phone, password, address, course } = req.body;
-
-  const existing = await Student.findOne({ email: email.toLowerCase() });
-  if (existing) throw new ApiError(409, "An account with this email already exists");
-
-  const student = await Student.create({ name, email, phone, password, address, course });
-  const token = generateToken(student._id, "student");
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, { token, student: publicStudent(student) }, "Account created successfully"));
-});
+// Public self-registration has been removed (see #9 — Student Authentication
+// Update): only Admin can create student accounts now, via
+// controllers/adminStudent.controller.js#createStudent. This file
+// intentionally has no `signup` export any more.
 
 /**
  * @route POST /api/student/auth/login
+ * @desc  Accepts either the student's email or their assigned username as
+ *        the login identifier (both are unique, so this is unambiguous).
  */
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email: identifier, password } = req.body;
+  const value = (identifier || "").trim().toLowerCase();
 
-  const student = await Student.findOne({ email: email.toLowerCase() }).select("+password");
-  if (!student) throw new ApiError(401, "Invalid email or password");
+  const student = await Student.findOne({ $or: [{ email: value }, { username: value }] }).select("+password");
+  if (!student) throw new ApiError(401, "Invalid email/username or password");
   if (!student.isActive) throw new ApiError(403, "This account has been disabled. Please contact the institute.");
 
   const isMatch = await student.comparePassword(password);
-  if (!isMatch) throw new ApiError(401, "Invalid email or password");
+  if (!isMatch) throw new ApiError(401, "Invalid email/username or password");
 
   const token = generateToken(student._id, "student");
 

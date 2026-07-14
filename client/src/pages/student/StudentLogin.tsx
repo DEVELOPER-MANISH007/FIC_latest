@@ -6,6 +6,11 @@ import FormField from "@/components/common/FormField";
 import { useAuth } from "@/context/AuthContext";
 import type { LoginFormData } from "@/types";
 
+/**
+ * Student accounts are created exclusively by Admin (#9 — Student
+ * Authentication Update) — there is no "create an account" link here, and
+ * no /signup route exists any more.
+ */
 const StudentLogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -27,7 +32,7 @@ const StudentLogin = () => {
       const redirectTo = (location.state?.from as any)?.pathname || "/dashboard";
       navigate(redirectTo, { replace: true });
     } catch (err: any) {
-      setServerError(err?.response?.data?.message || "Invalid email or password");
+      setServerError(err?.response?.data?.message || "Invalid email/username or password");
     } finally {
       setLoading(false);
     }
@@ -39,21 +44,18 @@ const StudentLogin = () => {
       subtitle="Log in to access your dashboard, tests and results."
       footer={
         <p className="text-[13.5px] text-[#C6CEEF]">
-          New here?{" "}
-          <Link to="/signup" className="text-white font-semibold hover:underline">
-            Create an account
-          </Link>
+          Trouble logging in? Contact the institute — only Admin can create or recover student accounts.
         </p>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         <FormField
-          label="Email Address"
+          label="Email or Username"
           id="email"
-          type="email"
-          placeholder="you@example.com"
+          type="text"
+          placeholder="you@example.com or your username"
           error={errors.email?.message}
-          {...register("email", { required: "Please enter your email address." })}
+          {...register("email", { required: "Please enter your email or username." })}
         />
         <FormField
           label="Password"

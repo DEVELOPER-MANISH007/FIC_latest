@@ -94,20 +94,23 @@ FIC_latest/
 - Home, About, Courses, Faculty, Gallery, Facilities
 - Admission form, Contact form
 - Responsive design with animations
+- **Notes Library** — Public study notes browsable and downloadable from the home page, no login required (`#notes`)
 
 ### Student Portal
 - Signup / Login / Forgot Password
 - Dashboard, profile & photo upload
 - Online exams with live timer & auto-save
 - Results & attempt history
+- Study Material — browse/search/filter by Subject, preview PDFs inline, download files (Public + their own Enrolled-Only material)
 
 ### Admin Panel
 - Secure admin login (JWT)
 - Question Bank (CRUD + Excel import/export)
 - Category management
 - Test generator with category-wise question distribution
-- Student management
+- Student management, including **Reset Password** for any student (no old password required)
 - Results & analytics dashboard
+- Study Material Management — upload/edit/delete PDF/ZIP/DOC(X)/PPT(X)/image materials by **Subject → Topic → Unit**, with visibility control (Public / Enrolled Students Only). No Course selection required.
 
 ### Exam Engine
 - Random **50-question paper** per student with shuffled options
@@ -139,12 +142,19 @@ npm install
 cp .env.example .env        # Edit MONGODB_URI, JWT_SECRET, etc.
 npm run seed                # Seed website content
 npm run seed:exam           # Seed exam module (admin, questions, test)
+npm run migrate:study-material  # One-time: backfill subject/unit on any pre-existing Study Material records
 npm run dev                 # http://localhost:5000
 ```
 
 Default admin login after `seed:exam`:
 - **Email:** `admin@futureitcollege.com`
 - **Password:** `Admin@123`
+
+> **Upgrading an existing deployment?** Study Material records now use a
+> `subject` / `unit` structure instead of the earlier Course selection. Run
+> `npm run migrate:study-material` once after deploying — it backfills those
+> two fields on any older records (from `subjectName`/`courseName`/`module`)
+> without deleting anything, and is safe to re-run.
 
 ### 3. Frontend setup
 
@@ -174,7 +184,7 @@ npm run dev
 | `JWT_SECRET` | Yes | Secret key for JWT tokens |
 | `JWT_EXPIRES_IN` | No | Token expiry (default: `7d`) |
 | `CLIENT_URL` | Yes | Frontend URL(s), comma-separated for CORS |
-| `CLOUDINARY_CLOUD_NAME` | Prod | Cloudinary cloud name |
+| `CLOUDINARY_CLOUD_NAME` | Prod | Cloudinary cloud name (profile photos + Study Material files) |
 | `CLOUDINARY_API_KEY` | Prod | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Prod | Cloudinary API secret |
 | `EMAIL_HOST` | No | SMTP host for notifications |
@@ -238,9 +248,9 @@ CLIENT_URL=https://your-frontend.vercel.app
 
 | Section | Routes |
 |---------|--------|
-| **Public** | `/` |
-| **Student** | `/login`, `/signup`, `/forgot-password`, `/dashboard`, `/exam/:attemptId`, `/result/:resultId` |
-| **Admin** | `/admin/login`, `/admin/dashboard`, `/admin/questions`, `/admin/categories`, `/admin/exams`, `/admin/students`, `/admin/results`, `/admin/analytics` |
+| **Public** | `/` (includes the `#notes` Notes Library section) |
+| **Student** | `/login`, `/signup`, `/forgot-password`, `/dashboard`, `/dashboard/study-material`, `/exam/:attemptId`, `/result/:resultId` |
+| **Admin** | `/admin/login`, `/admin/dashboard`, `/admin/questions`, `/admin/categories`, `/admin/exams`, `/admin/students`, `/admin/students/:id`, `/admin/results`, `/admin/analytics`, `/admin/study-materials` |
 
 ### Key API Endpoints
 
@@ -260,6 +270,23 @@ CLIENT_URL=https://your-frontend.vercel.app
 | GET/POST/PUT/DELETE | `/api/admin/exams` | Test management |
 | GET | `/api/admin/dashboard` | Dashboard summary |
 | GET | `/api/admin/dashboard/analytics` | Charts data |
+| PATCH | `/api/admin/students/:id/reset-password` | Admin resets a student's password (no old password needed) |
+| GET | `/api/public/materials` | **Notes Library** — Public study materials, no login required |
+| GET | `/api/public/materials/subjects` | Distinct subjects among Public materials |
+| GET | `/api/public/materials/:id` | Single Public material (404 if not Public) |
+| POST | `/api/public/materials/:id/download` | Register a download on a Public material, no login required |
+| GET | `/api/materials` | Browse study materials — Public + own Enrolled-Only (student, auth required) |
+| GET | `/api/materials/subjects` | Distinct subjects visible to the student (student, auth required) |
+| GET | `/api/materials/:id` | Single study material (student, auth required) |
+| POST | `/api/materials/:id/download` | Register a download + get file URL (student) |
+| GET/POST/PUT/DELETE | `/api/admin/materials` | Study Material CRUD — Subject/Topic/Unit structure (admin) |
+| GET | `/api/admin/materials/subjects` | Distinct subjects in use (admin) |
+
+> Legacy Course/Subject catalogue endpoints (`/api/study-courses`,
+> `/api/admin/study-courses`) remain in the codebase for backward
+> compatibility with any earlier integrations, but are no longer used by the
+> Study Material upload form.
+
 
 ---
 

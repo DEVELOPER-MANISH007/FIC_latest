@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ResetPasswordModal from "@/components/admin/ResetPasswordModal";
+import StudentFormModal from "@/components/admin/StudentFormModal";
 import { fetchStudentProfile } from "@/services/api/adminStudent.service";
 import type { ExamResult, StudentUser } from "@/types";
 
@@ -10,8 +12,10 @@ const AdminStudentProfile = () => {
   const [student, setStudent] = useState<(StudentUser & { isActive?: boolean }) | null>(null);
   const [results, setResults] = useState<ExamResult[]>([]);
   const [error, setError] = useState("");
+  const [showReset, setShowReset] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     if (!studentId) return;
     setError("");
     fetchStudentProfile(studentId)
@@ -24,6 +28,11 @@ const AdminStudentProfile = () => {
       .catch((err) => {
         setError(err?.response?.data?.message || "Could not load student profile");
       });
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
   if (!studentId) {
@@ -47,12 +56,25 @@ const AdminStudentProfile = () => {
   return (
     <AdminLayout title="Student Profile">
       <div className="card p-8 mb-8">
-        <h2 className="font-display font-bold text-2xl">{student.name}</h2>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <h2 className="font-display font-bold text-2xl">{student.name}</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowEdit(true)} className="btn btn-outline btn-sm !text-[var(--ink)] !border-[var(--line)]">
+              Edit
+            </button>
+            <button onClick={() => setShowReset(true)} className="btn btn-outline btn-sm !text-[var(--royal)] !border-[var(--line)]">
+              Reset Password
+            </button>
+          </div>
+        </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 text-[13.5px]">
           <div><p className="text-[var(--ink-soft)]">Email</p><p className="font-medium">{student.email}</p></div>
+          <div><p className="text-[var(--ink-soft)]">Username</p><p className="font-medium">{student.username ? `@${student.username}` : "—"}</p></div>
           <div><p className="text-[var(--ink-soft)]">Phone</p><p className="font-medium">{student.phone}</p></div>
           <div><p className="text-[var(--ink-soft)]">Course</p><p className="font-medium">{student.course || "—"}</p></div>
+          <div><p className="text-[var(--ink-soft)]">Batch</p><p className="font-medium">{student.batch || "—"}</p></div>
           <div><p className="text-[var(--ink-soft)]">Address</p><p className="font-medium">{student.address || "—"}</p></div>
+          <div><p className="text-[var(--ink-soft)]">Status</p><p className={`font-medium ${student.isActive === false ? "text-red-500" : "text-green-600"}`}>{student.isActive === false ? "Disabled" : "Active"}</p></div>
         </div>
       </div>
 
@@ -85,6 +107,21 @@ const AdminStudentProfile = () => {
           </table>
         )}
       </div>
+
+      {showReset && (
+        <ResetPasswordModal studentId={studentId} studentName={student.name} onClose={() => setShowReset(false)} />
+      )}
+
+      {showEdit && (
+        <StudentFormModal
+          student={student}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            load();
+          }}
+        />
+      )}
     </AdminLayout>
   );
 };

@@ -5,15 +5,6 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { parseExcelBuffer, normalizeQuestionRow } from "../utils/excelHelper.js";
 
-/** Strips internal exam fields students must never see (question IDs, answer settings). */
-const sanitizeExamForStudent = (exam) => {
-  const doc = exam.toObject ? exam.toObject() : { ...exam };
-  delete doc.questions;
-  delete doc.showExplanationAfterSubmit;
-  delete doc.createdBy;
-  return doc;
-};
-
 /**
  * @route GET /api/exams
  * @desc  List active exams — used by the Student Dashboard
@@ -22,7 +13,7 @@ const sanitizeExamForStudent = (exam) => {
  */
 export const getActiveExams = asyncHandler(async (req, res) => {
   const exams = await Exam.find({ isActive: true }).sort({ createdAt: -1 });
-  return res.status(200).json(new ApiResponse(200, exams.map(sanitizeExamForStudent)));
+  return res.status(200).json(new ApiResponse(200, exams));
 });
 
 /**
@@ -32,7 +23,7 @@ export const getActiveExams = asyncHandler(async (req, res) => {
 export const getExamById = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(req.params.id);
   if (!exam || !exam.isActive) throw new ApiError(404, "Test not found or is no longer active");
-  return res.status(200).json(new ApiResponse(200, sanitizeExamForStudent(exam)));
+  return res.status(200).json(new ApiResponse(200, exam));
 });
 
 /**
@@ -65,6 +56,11 @@ export const createExam = asyncHandler(async (req, res) => {
     allowRetest,
     showExplanationAfterSubmit,
     isActive,
+    fullscreenRequired,
+    tabSwitchDetectionEnabled,
+    maxViolations,
+    autoSubmitOnMaxViolations,
+    calculatorEnabled,
   } = req.body;
 
   if (!name || !durationMinutes) {
@@ -94,6 +90,11 @@ export const createExam = asyncHandler(async (req, res) => {
     allowRetest,
     showExplanationAfterSubmit,
     isActive,
+    fullscreenRequired,
+    tabSwitchDetectionEnabled,
+    maxViolations,
+    autoSubmitOnMaxViolations,
+    calculatorEnabled,
     createdBy: req.admin._id,
   });
 

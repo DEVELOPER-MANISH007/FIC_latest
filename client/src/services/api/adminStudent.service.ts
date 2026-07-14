@@ -14,9 +14,11 @@ const normalizeStudent = (raw: RawStudent): StudentUser & { isActive?: boolean }
   id: getStudentId(raw) || "",
   name: raw.name,
   email: raw.email,
+  username: raw.username,
   phone: raw.phone,
   address: raw.address,
   course: raw.course,
+  batch: raw.batch,
   photo: raw.photo,
   studentIdCode: raw.studentIdCode,
   createdAt: raw.createdAt,
@@ -44,9 +46,49 @@ export const fetchStudentProfile = async (id: string) => {
   };
 };
 
+export interface CreateStudentPayload {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  username?: string;
+  course?: string;
+  batch?: string;
+  address?: string;
+  isActive?: boolean;
+}
+
+/** Admin-only student account creation — public self-registration has been removed. */
+export const createStudent = async (payload: CreateStudentPayload) => {
+  const res = await api.post<ApiResponse<RawStudent>>("/admin/students", payload);
+  return res.data.data ? normalizeStudent(res.data.data) : null;
+};
+
+export interface UpdateStudentPayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  username?: string;
+  course?: string;
+  batch?: string;
+  address?: string;
+  isActive?: boolean;
+}
+
+/** Edits profile fields only — password changes always go through resetStudentPassword. */
+export const updateStudent = async (id: string, payload: UpdateStudentPayload) => {
+  const res = await api.put<ApiResponse<RawStudent>>(`/admin/students/${id}`, payload);
+  return res.data.data ? normalizeStudent(res.data.data) : null;
+};
+
 export const toggleStudentStatus = async (id: string, isActive: boolean) => {
   const res = await api.patch<ApiResponse<StudentUser>>(`/admin/students/${id}/disable`, { isActive });
   return res.data.data;
+};
+
+/** Admin sets a new password for a student — no old password required. */
+export const resetStudentPassword = async (id: string, newPassword: string) => {
+  await api.patch(`/admin/students/${id}/reset-password`, { newPassword });
 };
 
 export const deleteStudent = async (id: string) => {

@@ -21,6 +21,11 @@ interface ConfigState {
   passingPercentage: number;
   description: string;
   isActive: boolean;
+  fullscreenRequired: boolean;
+  tabSwitchDetectionEnabled: boolean;
+  maxViolations: number;
+  autoSubmitOnMaxViolations: boolean;
+  calculatorEnabled: boolean;
 }
 
 const EMPTY_QUESTION: ExamQuestionPayload = {
@@ -52,6 +57,11 @@ const AdminTestBuilder = () => {
     passingPercentage: 60,
     description: "",
     isActive: true,
+    fullscreenRequired: true,
+    tabSwitchDetectionEnabled: true,
+    maxViolations: 3,
+    autoSubmitOnMaxViolations: true,
+    calculatorEnabled: false,
   });
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
   const [loading, setLoading] = useState(!isNew);
@@ -84,6 +94,11 @@ const AdminTestBuilder = () => {
           passingPercentage: exam.passingPercentage,
           description: exam.description || "",
           isActive: exam.isActive,
+          fullscreenRequired: exam.fullscreenRequired ?? true,
+          tabSwitchDetectionEnabled: exam.tabSwitchDetectionEnabled ?? true,
+          maxViolations: exam.maxViolations ?? 3,
+          autoSubmitOnMaxViolations: exam.autoSubmitOnMaxViolations ?? true,
+          calculatorEnabled: exam.calculatorEnabled ?? false,
         });
         setQuestions((exam.questions || []).filter((q): q is QuestionBankItem => typeof q !== "string"));
       })
@@ -112,6 +127,11 @@ const AdminTestBuilder = () => {
       description: config.description,
       isActive: config.isActive,
       difficulty: "Mixed" as const,
+      fullscreenRequired: config.fullscreenRequired,
+      tabSwitchDetectionEnabled: config.tabSwitchDetectionEnabled,
+      maxViolations: config.maxViolations,
+      autoSubmitOnMaxViolations: config.autoSubmitOnMaxViolations,
+      calculatorEnabled: config.calculatorEnabled,
     };
     if (examId) {
       await updateExam(examId, payload);
@@ -309,6 +329,57 @@ const AdminTestBuilder = () => {
         <div>
           <label className="f-label" htmlFor="tb-desc">Description</label>
           <textarea id="tb-desc" className="field" rows={2} value={config.description} onChange={(e) => setConfig((c) => ({ ...c, description: e.target.value }))} />
+        </div>
+
+        <div className="border-t border-[var(--line)] pt-5">
+          <h3 className="font-display font-semibold text-[14.5px] mb-1">Secure Exam Mode &amp; Anti-Cheating</h3>
+          <p className="text-[12px] text-[var(--ink-soft)] mb-4">Controls what students experience while taking this test.</p>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-4 py-3 cursor-pointer">
+              <span className="text-[13px] font-medium">Require Fullscreen Mode</span>
+              <input
+                type="checkbox"
+                checked={config.fullscreenRequired}
+                onChange={(e) => setConfig((c) => ({ ...c, fullscreenRequired: e.target.checked }))}
+              />
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-4 py-3 cursor-pointer">
+              <span className="text-[13px] font-medium">Tab-Switching Detection</span>
+              <input
+                type="checkbox"
+                checked={config.tabSwitchDetectionEnabled}
+                onChange={(e) => setConfig((c) => ({ ...c, tabSwitchDetectionEnabled: e.target.checked }))}
+              />
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-4 py-3 cursor-pointer">
+              <span className="text-[13px] font-medium">Auto-Submit at Max Violations</span>
+              <input
+                type="checkbox"
+                checked={config.autoSubmitOnMaxViolations}
+                onChange={(e) => setConfig((c) => ({ ...c, autoSubmitOnMaxViolations: e.target.checked }))}
+              />
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-4 py-3 cursor-pointer">
+              <span className="text-[13px] font-medium">Enable Calculator</span>
+              <input
+                type="checkbox"
+                checked={config.calculatorEnabled}
+                onChange={(e) => setConfig((c) => ({ ...c, calculatorEnabled: e.target.checked }))}
+              />
+            </label>
+            <div>
+              <label className="f-label" htmlFor="tb-max-violations">Maximum Violations Before Auto-Submit</label>
+              <input
+                id="tb-max-violations"
+                type="number"
+                min={1}
+                className="field"
+                value={config.maxViolations}
+                onChange={(e) => setConfig((c) => ({ ...c, maxViolations: Math.max(1, Number(e.target.value)) }))}
+              />
+            </div>
+          </div>
         </div>
 
         {error && <p className="text-[12.5px] text-red-500">{error}</p>}

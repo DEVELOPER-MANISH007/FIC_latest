@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { LoginFormData, SignupFormData, StudentUser } from "@/types";
-import { loginStudent, signupStudent, getStudentMe } from "@/services/api/studentAuth.service";
+import type { LoginFormData, StudentUser } from "@/types";
+import { loginStudent, getStudentMe } from "@/services/api/studentAuth.service";
 import { STUDENT_TOKEN_KEY } from "@/services/api/axiosInstance";
 
 interface AuthContextValue {
   student: StudentUser | null;
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
-  signup: (data: SignupFormData) => Promise<void>;
   logout: () => void;
   updateStudent: (student: StudentUser) => void;
 }
@@ -18,6 +17,10 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * Student authentication context. Persists the JWT under a fixed
  * localStorage key ("Remember Login") and rehydrates the session by
  * calling /student/auth/me on load.
+ *
+ * There is intentionally no `signup` here — public self-registration was
+ * removed (see #9, Student Authentication Update); every student account
+ * is created by Admin via the Student Management panel.
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [student, setStudent] = useState<StudentUser | null>(null);
@@ -42,13 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setStudent(result.student);
   };
 
-  const signup = async (data: SignupFormData) => {
-    const result = await signupStudent(data);
-    if (!result) return;
-    localStorage.setItem(STUDENT_TOKEN_KEY, result.token);
-    setStudent(result.student);
-  };
-
   const logout = () => {
     localStorage.removeItem(STUDENT_TOKEN_KEY);
     setStudent(null);
@@ -57,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateStudent = (updated: StudentUser) => setStudent(updated);
 
   return (
-    <AuthContext.Provider value={{ student, loading, login, signup, logout, updateStudent }}>
+    <AuthContext.Provider value={{ student, loading, login, logout, updateStudent }}>
       {children}
     </AuthContext.Provider>
   );

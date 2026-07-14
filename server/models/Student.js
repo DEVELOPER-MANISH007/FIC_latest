@@ -21,9 +21,23 @@ const StudentSchema = new mongoose.Schema(
     password: { type: String, required: [true, "Password is required"], minlength: 6, select: false },
     address: { type: String, trim: true, default: "" },
     course: { type: String, trim: true, default: "" },
+    batch: { type: String, trim: true, default: "" },
+    // Optional secondary login identifier — students created before this
+    // field existed simply have no username and keep logging in by email.
+    username: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+    },
     photo: { type: String, trim: true, default: "" },
     studentIdCode: { type: String, trim: true, default: "" },
     isActive: { type: Boolean, default: true },
+    // Every student account is now created by an Admin (see #9 — public
+    // registration removed); kept optional so pre-existing self-registered
+    // accounts aren't affected.
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
   },

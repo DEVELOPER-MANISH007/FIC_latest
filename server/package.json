@@ -10,7 +10,8 @@
     "seed": "node seed/seed.js",
     "seed:exam": "node seed/seedExam.js",
     "seedQuestions": "node seed/seedQuestions.js",
-    "seedAdmin": "node seed/seedAdmin.js"
+    "seedAdmin": "node seed/seedAdmin.js",
+    "migrate:study-material": "node migrations/migrateStudyMaterial.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

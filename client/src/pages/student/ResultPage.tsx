@@ -3,19 +3,25 @@ import { Link, useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { fetchResult } from "@/services/api/attempt.service";
 import Loading from "@/components/common/Loading";
-import type { StudentResultSummary } from "@/types";
+import type { ExamResult } from "@/types";
 
-const COLORS = { correct: "#22c55e", wrong: "#ef4444", unattempted: "#94a3b8" };
+const COLORS = { correct: "#22c55e", wrong: "#ef4444", skipped: "#94a3b8" };
 
+/**
+ * Result summary — score, percentage, pass/fail, time taken only.
+ * Per exam security policy, the answer key / question-wise analysis is
+ * never shown to students (only Admin has access to correct answers), so
+ * there is intentionally no "Analyze Your Result" feature here.
+ */
 const ResultPage = () => {
   const { resultId } = useParams<{ resultId: string }>();
-  const [result, setResult] = useState<StudentResultSummary | null>(null);
+  const [result, setResult] = useState<ExamResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!resultId) return;
     fetchResult(resultId).then((data) => {
-      setResult(data || null);
+      if (data) setResult(data.result);
       setLoading(false);
     });
   }, [resultId]);
@@ -26,28 +32,26 @@ const ResultPage = () => {
   const chartData = [
     { name: "Correct", value: result.correct, color: COLORS.correct },
     { name: "Wrong", value: result.wrong, color: COLORS.wrong },
-    { name: "Unattempted", value: result.unattempted, color: COLORS.unattempted },
+    { name: "Skipped", value: result.skipped, color: COLORS.skipped },
   ];
 
-  const passed = result.status === "PASS";
+  const minutes = Math.floor(result.timeTakenSeconds / 60);
+  const seconds = result.timeTakenSeconds % 60;
 
   return (
     <div className="min-h-screen bg-[var(--bg-soft)] py-10">
       <div className="container-x max-w-4xl">
         <div className="card p-8 lg:p-12 rounded-[var(--radius-lg)] text-center">
-          {result.examName && (
-            <p className="text-[13px] text-[var(--ink-soft)] font-medium mb-2">{result.examName}</p>
-          )}
           <span
             className={`inline-block text-[13px] font-semibold px-4 py-1.5 rounded-full mb-4 ${
-              passed ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+              result.isPassed ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
             }`}
           >
-            {result.status}
+            {result.isPassed ? "PASSED" : "FAILED"}
           </span>
           <h1 className="font-display font-bold text-3xl lg:text-4xl">{result.percentage}%</h1>
           <p className="text-[var(--ink-soft)] mt-2">
-            {result.score} / {result.totalMarks} marks
+            {result.obtainedMarks} / {result.totalMarks} marks
           </p>
 
           <div className="grid sm:grid-cols-2 gap-8 mt-10 items-center">
@@ -70,10 +74,6 @@ const ResultPage = () => {
                 <p className="font-display font-bold text-xl mt-1">{result.totalQuestions}</p>
               </div>
               <div className="card p-4">
-                <p className="text-[12px] text-[var(--ink-soft)]">Attempted</p>
-                <p className="font-display font-bold text-xl mt-1">{result.attempted}</p>
-              </div>
-              <div className="card p-4">
                 <p className="text-[12px] text-[var(--ink-soft)]">Correct</p>
                 <p className="font-display font-bold text-xl mt-1 text-green-600">{result.correct}</p>
               </div>
@@ -82,19 +82,15 @@ const ResultPage = () => {
                 <p className="font-display font-bold text-xl mt-1 text-red-500">{result.wrong}</p>
               </div>
               <div className="card p-4">
-                <p className="text-[12px] text-[var(--ink-soft)]">Unattempted</p>
-                <p className="font-display font-bold text-xl mt-1 text-[var(--ink-soft)]">{result.unattempted}</p>
+                <p className="text-[12px] text-[var(--ink-soft)]">Skipped</p>
+                <p className="font-display font-bold text-xl mt-1 text-[var(--ink-soft)]">{result.skipped}</p>
               </div>
-              <div className="card p-4">
+              <div className="card p-4 col-span-2">
                 <p className="text-[12px] text-[var(--ink-soft)]">Time Taken</p>
-                <p className="font-display font-bold text-xl mt-1">{result.timeTaken}</p>
+                <p className="font-display font-bold text-xl mt-1">
+                  {minutes}m {seconds}s
+                </p>
               </div>
-              {result.rank !== null && (
-                <div className="card p-4 col-span-2">
-                  <p className="text-[12px] text-[var(--ink-soft)]">Rank</p>
-                  <p className="font-display font-bold text-xl mt-1">#{result.rank}</p>
-                </div>
-              )}
             </div>
           </div>
 

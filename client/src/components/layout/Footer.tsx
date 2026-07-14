@@ -1,10 +1,15 @@
+import { useLocation } from "react-router-dom";
 import { SITE } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
 import logo from "@/assets/images/logo.png";
 
 const InstagramIcon = getIcon("checkCircle");
 
-const Footer = () => (
+const Footer = () => {
+  const { pathname } = useLocation();
+  const sectionHref = (hash: string) => (pathname === "/" ? hash : `/${hash}`);
+
+  return (
   <footer className="grad-navy pt-16 pb-8 relative overflow-hidden">
     <div className="container-x relative">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -36,11 +41,11 @@ const Footer = () => (
         <div>
           <p className="font-display font-semibold text-white text-[14px] mb-4">Quick Links</p>
           <ul className="space-y-3 text-[13.5px] text-[#9AA4D4]">
-            <li><a href="#courses" className="hover:text-white transition">Courses</a></li>
-            <li><a href="#facilities" className="hover:text-white transition">Facilities</a></li>
-            <li><a href="#gallery" className="hover:text-white transition">Gallery</a></li>
-            <li><a href="#admission" className="hover:text-white transition">Admission</a></li>
-            <li><a href="#contact" className="hover:text-white transition">Contact</a></li>
+            <li><a href={sectionHref("#courses")} className="hover:text-white transition">Courses</a></li>
+            <li><a href={sectionHref("#facilities")} className="hover:text-white transition">Facilities</a></li>
+            <li><a href={sectionHref("#gallery")} className="hover:text-white transition">Gallery</a></li>
+            <li><a href={sectionHref("#admission")} className="hover:text-white transition">Admission</a></li>
+            <li><a href={sectionHref("#contact")} className="hover:text-white transition">Contact</a></li>
           </ul>
         </div>
 
@@ -78,6 +83,7 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;

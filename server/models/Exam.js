@@ -26,9 +26,19 @@ const ExamSchema = new mongoose.Schema(
       },
     ],
     allowRetest: { type: Boolean, default: false },
+    // Deprecated: answer keys/correct-answer review are no longer ever shown
+    // to students (see attempt.controller.js getResultById) — kept on the
+    // schema only so existing documents don't lose the field.
     showExplanationAfterSubmit: { type: Boolean, default: true },
     isActive: { type: Boolean, default: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
+
+    // ---- Secure Exam Mode / anti-cheating configuration (admin-editable) ----
+    fullscreenRequired: { type: Boolean, default: true },
+    tabSwitchDetectionEnabled: { type: Boolean, default: true },
+    maxViolations: { type: Number, default: 3, min: 1 },
+    autoSubmitOnMaxViolations: { type: Boolean, default: true },
+    calculatorEnabled: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

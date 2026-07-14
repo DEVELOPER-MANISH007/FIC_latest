@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Exam from "../models/Exam.js";
 import Question from "../models/Question.js";
 import ExamAttempt from "../models/ExamAttempt.js";
@@ -8,58 +7,38 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { shuffleArray, shuffleOptionOrder } from "../utils/shuffle.js";
 
-/** Formats seconds as MM:SS for the student result summary. */
-const formatTimeTaken = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-};
+const VIOLATION_TYPES = [
+  "fullscreen-exit",
+  "tab-switch",
+  "window-blur",
+  "refresh-attempt",
+  "devtools-detected",
+  "copy-paste-attempt",
+  "other",
+];
 
 /**
- * Student-facing result payload — summary only, never includes answers,
- * explanations, attempt IDs, or per-question review data.
+ * Builds the student-facing view of a paper — never includes correctAnswer,
+ * and never includes any other student's data. `exam` here is the
+ * populated Exam doc (name + the Secure Exam Mode settings only — never
+ * the raw `questions` ref list), so the client always has an authoritative,
+ * server-issued copy of what security rules apply to this test.
  */
-const buildStudentResultSummary = async (result) => {
-  const examId = result.exam?._id || result.exam;
-  let rank = null;
-
-  if (examId) {
-    const betterCount = await Result.countDocuments({
-      exam: examId,
-      percentage: { $gt: result.percentage },
-    });
-    rank = betterCount + 1;
-  }
-
-  const attempted = result.correct + result.wrong;
-
-  return {
-    resultId: result._id,
-    examId: examId || null,
-    examName: result.exam?.name || null,
-    totalQuestions: result.totalQuestions,
-    attempted,
-    correct: result.correct,
-    wrong: result.wrong,
-    unattempted: result.skipped,
-    score: result.obtainedMarks,
-    totalMarks: result.totalMarks,
-    percentage: result.percentage,
-    timeTaken: formatTimeTaken(result.timeTakenSeconds),
-    timeTakenSeconds: result.timeTakenSeconds,
-    status: result.isPassed ? "PASS" : "FAIL",
-    rank,
-    createdAt: result.createdAt,
-  };
-};
-
-/** Builds the student-facing view of a paper — never includes correctAnswer. */
-const buildPaperView = (attempt) => ({
+const buildPaperView = (attempt, studentName) => ({
   attemptId: attempt._id,
-  exam: attempt.exam,
+  examName: attempt.exam?.name || "Test",
+  studentName,
   startedAt: attempt.startedAt,
   expiresAt: attempt.expiresAt,
   status: attempt.status,
+  violationCount: attempt.violationCount || 0,
+  settings: {
+    fullscreenRequired: attempt.exam?.fullscreenRequired ?? true,
+    tabSwitchDetectionEnabled: attempt.exam?.tabSwitchDetectionEnabled ?? true,
+    maxViolations: attempt.exam?.maxViolations ?? 3,
+    autoSubmitOnMaxViolations: attempt.exam?.autoSubmitOnMaxViolations ?? true,
+    calculatorEnabled: attempt.exam?.calculatorEnabled ?? false,
+  },
   questions: attempt.questions.map((aq, index) => {
     const q = aq.question;
     const optionTextByLetter = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
@@ -77,6 +56,8 @@ const buildPaperView = (attempt) => ({
     };
   }),
 });
+
+const EXAM_SETTINGS_FIELDS = "name fullscreenRequired tabSwitchDetectionEnabled maxViolations autoSubmitOnMaxViolations calculatorEnabled passingPercentage";
 
 /**
  * Selects `count` random active questions from a pool, given optional
@@ -103,6 +84,8 @@ const generateQuestionIds = async (exam) => {
   if (exam.questions?.length) {
     const own = await Question.find({ _id: { $in: exam.questions }, exam: exam._id, status: "Active" }).select("_id");
     if (!own.length) throw new ApiError(400, "This test has no active questions yet. Please contact the institute.");
+    // Server-side randomization: every student gets the same question set,
+    // shuffled into a different order — never reproducible from the client.
     return shuffleArray(own.map((q) => q._id));
   }
 
@@ -129,7 +112,7 @@ const generateQuestionIds = async (exam) => {
 };
 
 /** Grades one attempt, persists a Result, and marks the attempt submitted. */
-const finalizeAttempt = async (attemptDoc) => {
+const finalizeAttempt = async (attemptDoc, autoSubmitReason = "") => {
   const attempt = await ExamAttempt.findById(attemptDoc._id).populate("questions.question");
 
   let correct = 0;
@@ -166,6 +149,7 @@ const finalizeAttempt = async (attemptDoc) => {
 
   attempt.status = "submitted";
   attempt.submittedAt = new Date();
+  if (autoSubmitReason) attempt.autoSubmitReason = autoSubmitReason;
   await attempt.save();
 
   await Question.updateMany(
@@ -220,14 +204,16 @@ export const startAttempt = asyncHandler(async (req, res) => {
     student: req.student._id,
     exam: exam._id,
     status: "in-progress",
-  }).populate("questions.question");
+  })
+    .populate("questions.question")
+    .populate("exam", EXAM_SETTINGS_FIELDS);
 
   if (inProgress) {
     if (new Date() > inProgress.expiresAt) {
-      await finalizeAttempt(inProgress);
+      await finalizeAttempt(inProgress, "time-expired");
       throw new ApiError(403, "Your previous attempt's time expired and has been auto-submitted.");
     }
-    return res.status(200).json(new ApiResponse(200, buildPaperView(inProgress), "Resuming your in-progress test"));
+    return res.status(200).json(new ApiResponse(200, buildPaperView(inProgress, req.student.name), "Resuming your in-progress test"));
   }
 
   const questionIds = await generateQuestionIds(exam);
@@ -240,6 +226,8 @@ export const startAttempt = asyncHandler(async (req, res) => {
     exam: exam._id,
     questions: questionIds.map((qId) => ({
       question: qId,
+      // Server-side randomization: each student gets their own shuffled
+      // A/B/C/D order; the mapping back to the real answer never leaves the server.
       optionOrder: shuffleOptionOrder(),
       selectedAnswer: null,
       isMarkedForReview: false,
@@ -250,8 +238,10 @@ export const startAttempt = asyncHandler(async (req, res) => {
     status: "in-progress",
   });
 
-  const populated = await ExamAttempt.findById(attempt._id).populate("questions.question");
-  return res.status(201).json(new ApiResponse(201, buildPaperView(populated), "Test started"));
+  const populated = await ExamAttempt.findById(attempt._id)
+    .populate("questions.question")
+    .populate("exam", EXAM_SETTINGS_FIELDS);
+  return res.status(201).json(new ApiResponse(201, buildPaperView(populated, req.student.name), "Test started"));
 });
 
 /**
@@ -261,23 +251,18 @@ export const startAttempt = asyncHandler(async (req, res) => {
  * @access Student (owner only)
  */
 export const getAttempt = asyncHandler(async (req, res) => {
-  const attempt = await ExamAttempt.findById(req.params.attemptId).populate("questions.question");
+  const attempt = await ExamAttempt.findById(req.params.attemptId)
+    .populate("questions.question")
+    .populate("exam", EXAM_SETTINGS_FIELDS);
   if (!attempt) throw new ApiError(404, "Attempt not found");
   if (String(attempt.student) !== String(req.student._id)) throw new ApiError(403, "Not authorized");
 
   if (attempt.status === "in-progress" && new Date() > attempt.expiresAt) {
-    const result = await finalizeAttempt(attempt);
+    const result = await finalizeAttempt(attempt, "time-expired");
     return res.status(200).json(new ApiResponse(200, { autoSubmitted: true, resultId: result._id }, "Time expired — test auto-submitted"));
   }
 
-  if (attempt.status !== "in-progress") {
-    const result = await Result.findOne({ attempt: attempt._id });
-    return res.status(200).json(
-      new ApiResponse(200, { submitted: true, resultId: result?._id }, "This test has already been submitted")
-    );
-  }
-
-  return res.status(200).json(new ApiResponse(200, buildPaperView(attempt)));
+  return res.status(200).json(new ApiResponse(200, buildPaperView(attempt, req.student.name)));
 });
 
 /**
@@ -297,7 +282,7 @@ export const saveAnswer = asyncHandler(async (req, res) => {
   if (attempt.status !== "in-progress") throw new ApiError(400, "This test has already been submitted");
 
   if (new Date() > attempt.expiresAt) {
-    await finalizeAttempt(attempt);
+    await finalizeAttempt(attempt, "time-expired");
     throw new ApiError(403, "Time expired — this test has been auto-submitted");
   }
 
@@ -312,6 +297,46 @@ export const saveAnswer = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route POST /api/attempts/:attemptId/violation
+ * @desc  Suspicious Activity Log — records one anti-cheating violation
+ *        (fullscreen exit, tab switch, devtools, copy/paste attempt, etc.)
+ *        server-side, and auto-submits once the exam's configured
+ *        maxViolations is reached (if autoSubmitOnMaxViolations is on).
+ *        This is the authoritative enforcement point — the frontend only
+ *        detects and reports; it can never be the one deciding whether an
+ *        attempt gets force-submitted.
+ * @body  { type, meta? }
+ * @access Student (owner only)
+ */
+export const logViolation = asyncHandler(async (req, res) => {
+  const { type, meta } = req.body;
+  if (!VIOLATION_TYPES.includes(type)) throw new ApiError(400, "Invalid violation type");
+
+  const attempt = await ExamAttempt.findById(req.params.attemptId).populate("exam", EXAM_SETTINGS_FIELDS);
+  if (!attempt) throw new ApiError(404, "Attempt not found");
+  if (String(attempt.student) !== String(req.student._id)) throw new ApiError(403, "Not authorized");
+  if (attempt.status !== "in-progress") {
+    return res.status(200).json(new ApiResponse(200, { violationCount: attempt.violationCount, autoSubmitted: false }));
+  }
+
+  attempt.violations.push({ type, meta: String(meta || "").slice(0, 200), userAgent: req.headers["user-agent"] || "" });
+  attempt.violationCount += 1;
+  await attempt.save();
+
+  const maxViolations = attempt.exam?.maxViolations ?? 3;
+  const autoSubmitEnabled = attempt.exam?.autoSubmitOnMaxViolations ?? true;
+
+  if (autoSubmitEnabled && attempt.violationCount >= maxViolations) {
+    const result = await finalizeAttempt(attempt, "max-violations");
+    return res.status(200).json(
+      new ApiResponse(200, { violationCount: attempt.violationCount, autoSubmitted: true, resultId: result._id }, "Maximum violations reached — test auto-submitted")
+    );
+  }
+
+  return res.status(200).json(new ApiResponse(200, { violationCount: attempt.violationCount, autoSubmitted: false }));
+});
+
+/**
  * @route POST /api/attempts/:attemptId/submit
  * @access Student (owner only)
  */
@@ -321,21 +346,24 @@ export const submitAttempt = asyncHandler(async (req, res) => {
   if (String(attempt.student) !== String(req.student._id)) throw new ApiError(403, "Not authorized");
   if (attempt.status !== "in-progress") throw new ApiError(400, "This test has already been submitted");
 
-  const result = await finalizeAttempt(attempt);
+  const result = await finalizeAttempt(attempt, "manual");
   return res.status(200).json(new ApiResponse(200, { resultId: result._id }, "Test submitted successfully"));
 });
 
 /**
  * @route GET /api/attempts/results/:resultId
- * @access Student (owner only) — summary only; never exposes answers or review data.
+ * @desc  Result summary only — score, percentage, pass/fail, time taken.
+ *        Per policy, the answer key / correct-answer breakdown is NEVER
+ *        returned to students, regardless of any exam setting: only Admin
+ *        has access to that (via the Question Bank / Test Builder).
+ * @access Student (owner only)
  */
 export const getResultById = asyncHandler(async (req, res) => {
-  const result = await Result.findById(req.params.resultId).populate("exam", "name");
+  const result = await Result.findById(req.params.resultId).populate("exam", "name topic passingPercentage");
   if (!result) throw new ApiError(404, "Result not found");
   if (String(result.student) !== String(req.student._id)) throw new ApiError(403, "Not authorized");
 
-  const summary = await buildStudentResultSummary(result);
-  return res.status(200).json(new ApiResponse(200, summary));
+  return res.status(200).json(new ApiResponse(200, { result }));
 });
 
 /**
@@ -344,7 +372,6 @@ export const getResultById = asyncHandler(async (req, res) => {
  * @access Student
  */
 export const getMyResults = asyncHandler(async (req, res) => {
-  const results = await Result.find({ student: req.student._id }).populate("exam", "name").sort({ createdAt: -1 });
-  const summaries = await Promise.all(results.map((r) => buildStudentResultSummary(r)));
-  return res.status(200).json(new ApiResponse(200, summaries));
+  const results = await Result.find({ student: req.student._id }).populate("exam", "name topic").sort({ createdAt: -1 });
+  return res.status(200).json(new ApiResponse(200, results));
 });

@@ -1,13 +1,13 @@
 import api from "./axiosInstance";
-import type { ApiResponse, LoginFormData, SignupFormData, StudentUser } from "@/types";
+import type { ApiResponse, LoginFormData, StudentUser } from "@/types";
 
 interface AuthPayload { token: string; student: StudentUser }
 
-export const signupStudent = async (data: SignupFormData) => {
-  const res = await api.post<ApiResponse<AuthPayload>>("/student/auth/signup", data);
-  return res.data.data;
-};
+// Public self-registration removed (#9 — Student Authentication Update):
+// there is intentionally no signupStudent() here. Every student account is
+// created by Admin (see services/api/adminStudent.service.ts#createStudent).
 
+/** `data.email` accepts either the student's email address or their assigned username. */
 export const loginStudent = async (data: LoginFormData) => {
   const res = await api.post<ApiResponse<AuthPayload>>("/student/auth/login", data);
   return res.data.data;

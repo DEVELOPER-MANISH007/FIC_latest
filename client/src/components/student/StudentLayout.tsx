@@ -16,12 +16,15 @@ const ShieldIcon = getIcon("shield");
 const LogOutIcon = getIcon("arrowRight");
 const MenuIcon = getIcon("menu");
 const CloseIcon = getIcon("close");
+const FolderIcon = getIcon("folder");
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: GridIcon, end: true },
   { to: "/dashboard/profile", label: "My Profile", icon: UserIcon },
   { to: "/dashboard/tests", label: "Available Tests", icon: FileTextIcon },
   { to: "/dashboard/attempted", label: "Attempted Tests", icon: CheckCircleIcon },
+  { to: "/dashboard/study-material", label: "Study Material", icon: FolderIcon },
+  { to: "/my-notes", label: "My Notes", icon: FileTextIcon },
   { to: "/dashboard/results", label: "Results", icon: AwardIcon },
   { to: "/dashboard/performance", label: "Performance", icon: TrendingUpIcon },
   { to: "/dashboard/change-password", label: "Change Password", icon: ShieldIcon },

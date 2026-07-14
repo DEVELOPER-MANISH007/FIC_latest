@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  signup,
   login,
   getMe,
   updateProfile,
@@ -11,7 +10,6 @@ import {
 } from "../controllers/studentAuth.controller.js";
 import uploadImage from "../middleware/uploadImage.js";
 import {
-  signupValidationRules,
   loginValidationRules,
   forgotPasswordValidationRules,
   resetPasswordValidationRules,
@@ -21,7 +19,9 @@ import { protectStudent } from "../middleware/auth.js";
 
 const router = Router();
 
-router.post("/signup", signupValidationRules, validate, signup);
+// Public self-registration removed (#9 — Student Authentication Update).
+// Student accounts are created exclusively by Admin via
+// POST /api/admin/students (see adminStudent.routes.js).
 router.post("/login", loginValidationRules, validate, login);
 router.get("/me", protectStudent, getMe);
 router.put("/profile", protectStudent, updateProfile);
