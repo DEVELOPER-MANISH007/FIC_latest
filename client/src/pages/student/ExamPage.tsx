@@ -21,8 +21,13 @@ const isPaper = (data: any): data is AttemptPaper => data && Array.isArray(data.
 
 const OFFLINE_QUEUE_PREFIX = "exam-offline-queue:";
 
+type PendingAnswerUpdate = {
+  selectedAnswer?: "A" | "B" | "C" | "D" | null;
+  isMarkedForReview?: boolean;
+};
+
 type PendingAnswer = {
-  questionIndex?: number;
+  questionIndex: number;
   selectedAnswer?: "A" | "B" | "C" | "D" | null;
   isMarkedForReview?: boolean;
 };
@@ -151,9 +156,9 @@ const ExamPage = () => {
   // locked out while a security warning is up (#3) — resumed only via OK.
   const isLocked = isPaused || terminating;
 
-  const persistAnswer = async (updates: PendingAnswer) => {
+  const persistAnswer = async (updates: PendingAnswerUpdate) => {
     if (!attemptId || isLocked) return;
-    const fullUpdate: { questionIndex: number; selectedAnswer?: "A" | "B" | "C" | "D" | null; isMarkedForReview?: boolean } = {
+    const fullUpdate: PendingAnswer = {
       questionIndex: currentIndex,
       ...updates,
     };
