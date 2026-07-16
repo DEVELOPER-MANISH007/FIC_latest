@@ -29,8 +29,20 @@ if (!process.env.JWT_SECRET) {
 }
 
 const parseCorsOrigins = () => {
-  const raw = process.env.CLIENT_URL || "http://localhost:5173";
-  return raw.split(",").map((origin) => origin.trim()).filter(Boolean);
+  const raw = process.env.CLIENT_URL || process.env.CLIENT_URLS || process.env.FRONTEND_URL || "";
+  const defaults = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://ficveerpura.vercel.app",
+    "https://ficcc-zeta.vercel.app",
+  ];
+
+  const configuredOrigins = raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return [...new Set([...defaults, ...configuredOrigins])];
 };
 
 const createApp = () => {
@@ -39,10 +51,78 @@ const createApp = () => {
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   app.use(
     cors({
-      origin: parseCorsOrigins(),
+      origin: (origin, callback) => {
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        const allowedOrigins = parseCorsOrigins();
+        const isAllowedOrigin = allowedOrigins.some((allowedOrigin) => {
+          if (allowedOrigin === "*") return true;
+          if (allowedOrigin === origin) return true;
+          if (allowedOrigin.includes("*")) {
+            const pattern = new RegExp(`^${allowedOrigin.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\\\*/g, ".*")}$`);
+            return pattern.test(origin);
+          }
+          return false;
+        });
+
+        const hostname = (() => {
+          try {
+            return new URL(origin).hostname;
+          } catch {
+            return "";
+          }
+        })();
+
+        if (isAllowedOrigin || hostname.endsWith(".vercel.app")) {
+          return callback(null, true);
+        }
+
+        callback(null, false);
+      },
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+      optionsSuccessStatus: 204,
     })
   );
+  app.options("*", cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const allowedOrigins = parseCorsOrigins();
+      const isAllowedOrigin = allowedOrigins.some((allowedOrigin) => {
+        if (allowedOrigin === "*") return true;
+        if (allowedOrigin === origin) return true;
+        if (allowedOrigin.includes("*")) {
+          const pattern = new RegExp(`^${allowedOrigin.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\\\*/g, ".*")}$`);
+          return pattern.test(origin);
+        }
+        return false;
+      });
+
+      const hostname = (() => {
+        try {
+          return new URL(origin).hostname;
+        } catch {
+          return "";
+        }
+      })();
+
+      if (isAllowedOrigin || hostname.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      callback(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 204,
+  }));
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
   app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
