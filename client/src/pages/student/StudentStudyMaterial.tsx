@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import StudentLayout from "@/components/student/StudentLayout";
 import { getIcon } from "@/constants/iconMap";
 import { fetchMaterials, fetchMaterialSubjects, registerDownload, type MaterialFilters } from "@/services/api/studyMaterial.service";
@@ -15,20 +14,14 @@ const DownloadIcon = getIcon("download");
 const CalendarIcon = getIcon("calendar");
 const HardDriveIcon = getIcon("hardDrive");
 const CloseIcon = getIcon("close");
-const LockIcon = getIcon("lock");
 
 /**
  * Student "Study Material" screen — browse/search/filter by Subject,
  * preview PDFs inline, and download files.
  *
- * Public material and the student's own Enrolled-Only material (matched
- * against their registered course) are fully unlocked. Enrolled-Only
- * material for other courses still shows up here — not hidden — but as a
- * locked card with an "available only for enrolled students" message and
- * an Enroll CTA, per the 3-state access model:
- *   not logged in -> redirected to /login by ProtectedRoute
- *   logged in, not enrolled -> locked card + Enroll CTA (this page)
- *   logged in, enrolled -> full view/download access
+ * Any authenticated student may view, preview, and download study materials.
+ * There is no enrollment gating on these pages; authentication is the only
+ * requirement.
  */
 const StudentStudyMaterial = () => {
   const toast = useToast();
@@ -79,11 +72,7 @@ const StudentStudyMaterial = () => {
       link.remove();
       setItems((prev) => prev.map((m) => (m._id === material._id ? { ...m, downloadCount: m.downloadCount + 1 } : m)));
     } catch (err: any) {
-      if (err?.response?.status === 403) {
-        toast.error("This material is available only for enrolled students.");
-      } else {
-        toast.error("Could not start the download. Please try again.");
-      }
+      toast.error("Could not start the download. Please try again.");
     } finally {
       setDownloadingId(null);
     }
@@ -128,10 +117,10 @@ const StudentStudyMaterial = () => {
       ) : (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
           {items.map((m) => (
-            <div key={m._id} className={`card p-6 flex flex-col gap-4 ${m.locked ? "opacity-90" : ""}`}>
+            <div key={m._id} className="card p-6 flex flex-col gap-4">
               <div className="flex items-start gap-3">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${m.locked ? "bg-[var(--bg-soft)] text-[var(--ink-soft)]" : FILE_TYPE_COLOR[m.fileType]}`}>
-                  {m.locked ? <LockIcon size={18} /> : <FileIcon size={19} />}
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${FILE_TYPE_COLOR[m.fileType]}`}>
+                  <FileIcon size={19} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-display font-semibold text-[15px] leading-snug" title={m.title}>{m.title}</h3>
@@ -150,36 +139,23 @@ const StudentStudyMaterial = () => {
 
               <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11.5px] text-[var(--ink-soft)] mt-auto pt-2 border-t border-[var(--line)]">
                 <span className="flex items-center gap-1.5"><CalendarIcon size={12} /> {new Date(m.createdAt).toLocaleDateString("en-IN")}</span>
-                {!m.locked && <span className="flex items-center gap-1.5"><HardDriveIcon size={12} /> {formatFileSize(m.fileSize)}</span>}
-                {!m.locked && <span className="flex items-center gap-1.5"><DownloadIcon size={12} /> {m.downloadCount}</span>}
+                <span className="flex items-center gap-1.5"><HardDriveIcon size={12} /> {formatFileSize(m.fileSize)}</span>
+                <span className="flex items-center gap-1.5"><DownloadIcon size={12} /> {m.downloadCount}</span>
               </div>
 
-              {m.locked ? (
-                <div className="rounded-xl bg-amber-50 border border-amber-100 p-3.5">
-                  <p className="text-[12px] text-amber-700 font-medium flex items-start gap-2">
-                    <LockIcon size={13} className="shrink-0 mt-0.5" />
-                    This material is available only for enrolled students.
-                  </p>
-                  <Link to="/#admission" className="btn btn-primary btn-sm w-full mt-3">
-                    Enroll Now
-                  </Link>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {m.fileType === "pdf" && (
-                    <button onClick={() => setPreviewItem(m)} className="btn btn-outline btn-sm flex-1 !text-[var(--ink)] !border-[var(--line)]">
-                      <EyeIcon size={13} /> Preview
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDownload(m)}
-                    disabled={downloadingId === m._id}
-                    className={`btn btn-primary btn-sm ${m.fileType === "pdf" ? "flex-1" : "w-full"}`}
-                  >
-                    <DownloadIcon size={13} /> {downloadingId === m._id ? "..." : "Download"}
+              <div className="flex items-center gap-2">
+                {m.fileType === "pdf" && (
+                  <button onClick={() => setPreviewItem(m)} className="btn btn-outline btn-sm flex-1 !text-[var(--ink)] !border-[var(--line)]">
+                    <EyeIcon size={13} /> Preview
                   </button>
-                </div>
-              )}
+                )}
+                <button
+                  onClick={() => handleDownload(m)}
+                  disabled={downloadingId === m._id}
+                  className={`btn btn-primary btn-sm ${m.fileType === "pdf" ? "flex-1" : "w-full"}`}>
+                  <DownloadIcon size={13} /> {downloadingId === m._id ? "..." : "Download"}
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { to: "/dashboard/tests", label: "Available Tests", icon: FileTextIcon },
   { to: "/dashboard/attempted", label: "Attempted Tests", icon: CheckCircleIcon },
   { to: "/dashboard/study-material", label: "Study Material", icon: FolderIcon },
-  { to: "/my-notes", label: "My Notes", icon: FileTextIcon },
+  { to: "/dashboard/my-notes", label: "My Notes", icon: FileTextIcon },
   { to: "/dashboard/results", label: "Results", icon: AwardIcon },
   { to: "/dashboard/performance", label: "Performance", icon: TrendingUpIcon },
   { to: "/dashboard/change-password", label: "Change Password", icon: ShieldIcon },

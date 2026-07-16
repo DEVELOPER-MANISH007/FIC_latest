@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getIcon } from "@/constants/iconMap";
 import { resetStudentPassword } from "@/services/api/adminStudent.service";
 import { useToast } from "@/context/ToastContext";
+import FormField from "@/components/common/FormField";
 
 const CloseIcon = getIcon("close");
 
@@ -61,29 +62,23 @@ const ResetPasswordModal = ({ studentId, studentName, onClose }: Props) => {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="f-label" htmlFor="new-password">New Password</label>
-            <input
-              id="new-password"
-              type="password"
-              className="field"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="f-label" htmlFor="confirm-password">Confirm New Password</label>
-            <input
-              id="confirm-password"
-              type="password"
-              className="field"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter the new password"
-            />
-          </div>
+          <FormField
+            label="New Password"
+            id="new-password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="At least 6 characters"
+            autoFocus
+          />
+          <FormField
+            label="Confirm New Password"
+            id="confirm-password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter the new password"
+          />
 
           {error && <p className="text-[12.5px] text-red-500">{error}</p>}
 

@@ -15,9 +15,9 @@ const CalendarIcon = getIcon("calendar");
 const CloseIcon = getIcon("close");
 
 /**
- * "My Notes" (/my-notes) — only material this student can actually open:
- * Public notes plus their own Enrolled-Only notes. Unlike the broader
- * Study Material page, nothing locked ever shows up here.
+ * "My Notes" (/dashboard/my-notes) — only material this student can actually open.
+ * Public notes plus any notes uploaded for students are shown here. Any
+ * authenticated student may view, preview, and download notes.
  */
 const MyNotes = () => {
   const toast = useToast();
@@ -132,8 +132,8 @@ const MyNotes = () => {
               {m.description && <p className="text-[12.5px] text-[var(--ink-soft)] line-clamp-2">{m.description}</p>}
 
               <div className="flex items-center gap-2 text-[11.5px] text-[var(--ink-soft)] mt-auto pt-2 border-t border-[var(--line)]">
-                <CalendarIcon size={12} /> {new Date(m.createdAt).toLocaleDateString("en-IN")}
-                <span>· {formatFileSize(m.fileSize)}</span>
+                <span className="flex items-center gap-1.5"><CalendarIcon size={12} /> {new Date(m.createdAt).toLocaleDateString("en-IN")}</span>
+                <span>{formatFileSize(m.fileSize)}</span>
               </div>
 
               <div className="flex items-center gap-2">

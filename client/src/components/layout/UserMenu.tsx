@@ -9,7 +9,7 @@ import { cn } from "@/utils/cn";
 
 const MENU_ITEMS = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "My Notes", to: "/my-notes" },
+  { label: "My Notes", to: "/dashboard/my-notes" },
   { label: "Profile", to: "/dashboard/profile" },
   { label: "Change Password", to: "/dashboard/change-password" },
 ] as const;

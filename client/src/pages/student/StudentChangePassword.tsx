@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import StudentLayout from "@/components/student/StudentLayout";
+import FormField from "@/components/common/FormField";
 import { changeStudentPassword } from "@/services/api/studentAuth.service";
 
 /**
@@ -56,45 +57,36 @@ const StudentChangePassword = () => {
         )}
 
         <div className="space-y-5">
-          <div>
-            <label htmlFor="cp-current" className="label">Current Password</label>
-            <input
-              id="cp-current"
-              type="password"
-              className="input"
-              value={form.currentPassword}
-              onChange={setField("currentPassword")}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="cp-new" className="label">New Password</label>
-            <input
-              id="cp-new"
-              type="password"
-              className="input"
-              value={form.newPassword}
-              onChange={setField("newPassword")}
-              autoComplete="new-password"
-              minLength={6}
-              required
-            />
-            <p className="text-[11.5px] text-[var(--ink-soft)] mt-1.5">At least 6 characters.</p>
-          </div>
-          <div>
-            <label htmlFor="cp-confirm" className="label">Confirm New Password</label>
-            <input
-              id="cp-confirm"
-              type="password"
-              className="input"
-              value={form.confirmPassword}
-              onChange={setField("confirmPassword")}
-              autoComplete="new-password"
-              minLength={6}
-              required
-            />
-          </div>
+          <FormField
+            label="Current Password"
+            id="cp-current"
+            type="password"
+            value={form.currentPassword}
+            onChange={setField("currentPassword")}
+            autoComplete="current-password"
+            required
+          />
+          <FormField
+            label="New Password"
+            id="cp-new"
+            type="password"
+            value={form.newPassword}
+            onChange={setField("newPassword")}
+            autoComplete="new-password"
+            minLength={6}
+            required
+          />
+          <p className="text-[11.5px] text-[var(--ink-soft)] mt-1.5">At least 6 characters.</p>
+          <FormField
+            label="Confirm New Password"
+            id="cp-confirm"
+            type="password"
+            value={form.confirmPassword}
+            onChange={setField("confirmPassword")}
+            autoComplete="new-password"
+            minLength={6}
+            required
+          />
         </div>
 
         <div className="mt-8">
