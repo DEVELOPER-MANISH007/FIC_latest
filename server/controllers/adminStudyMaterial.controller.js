@@ -2,7 +2,12 @@ import StudyMaterial, { STUDY_MATERIAL_CATEGORIES } from "../models/StudyMateria
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
-import { persistUploadedMaterial, deleteUploadedMaterial, detectFileType } from "../utils/materialUpload.js";
+import {
+  persistUploadedMaterial,
+  deleteUploadedMaterial,
+  detectFileType,
+  buildMaterialUploadSignature,
+} from "../utils/materialUpload.js";
 
 const SORT_MAP = {
   latest: { createdAt: -1 },
@@ -10,6 +15,70 @@ const SORT_MAP = {
   downloads: { downloadCount: -1 },
   title: { title: 1 },
 };
+
+/**
+ * @route POST /api/admin/materials/upload-signature
+ * @desc  Issues a short-lived signed-upload payload so the admin's browser
+ *        can send the file *directly* to Cloudinary, bypassing our Vercel
+ *        serverless function (which enforces a hard ~4.5MB request-body
+ *        limit at the platform level — unrelated to Multer's fileSize
+ *        limit, which never even runs for oversized requests on Vercel).
+ *        Body: { fileName } — used only to pick folder/resource_type and to
+ *        reject disallowed extensions before a signature is handed out.
+ */
+export const getMaterialUploadSignature = asyncHandler(async (req, res) => {
+  const { fileName } = req.body;
+  if (!fileName?.trim()) throw new ApiError(400, "fileName is required");
+
+  let payload;
+  try {
+    payload = buildMaterialUploadSignature(fileName.trim());
+  } catch (error) {
+    throw new ApiError(400, error.message);
+  }
+
+  return res.status(200).json(new ApiResponse(200, payload));
+});
+
+/**
+ * Resolves the uploaded-file fields for create/update from whichever path
+ * supplied them:
+ *  - Legacy multipart path: `middleware/uploadMaterial.js` put the buffer on
+ *    `req.file`; we upload it to Cloudinary here (fine for small files, and
+ *    for local dev where there's no Vercel body-size ceiling).
+ *  - Signed direct-upload path (used for large files in production): the
+ *    browser already uploaded straight to Cloudinary using the signature
+ *    from `getMaterialUploadSignature` and sends us back the resulting
+ *    metadata as plain JSON fields on `req.body`.
+ * Returns `null` if neither path supplied a file (e.g. metadata-only edit).
+ */
+async function resolveIncomingFile(req) {
+  if (req.file) {
+    const { url, publicId, resourceType } = await persistUploadedMaterial(req.file);
+    return {
+      fileUrl: url,
+      fileType: detectFileType(req.file.originalname),
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+      filePublicId: publicId,
+      fileResourceType: resourceType,
+    };
+  }
+
+  const { fileUrl, filePublicId, fileResourceType, fileName, fileSize } = req.body;
+  if (fileUrl && filePublicId && fileResourceType && fileName) {
+    return {
+      fileUrl,
+      fileType: detectFileType(fileName),
+      fileName,
+      fileSize: Number(fileSize) || 0,
+      filePublicId,
+      fileResourceType,
+    };
+  }
+
+  return null;
+}
 
 /**
  * @route GET /api/admin/materials
@@ -75,14 +144,16 @@ export const createMaterial = asyncHandler(async (req, res) => {
   if (!title?.trim()) throw new ApiError(400, "Topic/Notes title is required");
   if (!subject?.trim()) throw new ApiError(400, "Subject name is required");
   if (!unit?.trim()) throw new ApiError(400, "Unit name is required");
-  if (!req.file) throw new ApiError(400, 'A file is required (field name "file"): PDF, ZIP, DOC(X), PPT(X), or image');
 
   // Legacy field — only validated if explicitly supplied by an older caller.
   if (category && !STUDY_MATERIAL_CATEGORIES.includes(category)) {
     throw new ApiError(400, `Category must be one of: ${STUDY_MATERIAL_CATEGORIES.join(", ")}`);
   }
 
-  const { url, publicId, resourceType } = await persistUploadedMaterial(req.file);
+  const uploadedFile = await resolveIncomingFile(req);
+  if (!uploadedFile) {
+    throw new ApiError(400, 'A file is required (field name "file"): PDF, ZIP, DOC(X), PPT(X), or image');
+  }
 
   const material = await StudyMaterial.create({
     title: title.trim(),
@@ -91,12 +162,7 @@ export const createMaterial = asyncHandler(async (req, res) => {
     unit: unit.trim(),
     category: category || "",
     difficulty: difficulty || "",
-    fileUrl: url,
-    fileType: detectFileType(req.file.originalname),
-    fileName: req.file.originalname,
-    fileSize: req.file.size,
-    filePublicId: publicId,
-    fileResourceType: resourceType,
+    ...uploadedFile,
     visibility: visibility === "enrolled" ? "enrolled" : "public",
     uploadedBy: req.admin?._id,
   });
@@ -134,19 +200,14 @@ export const updateMaterial = asyncHandler(async (req, res) => {
   }
   if (difficulty !== undefined) material.difficulty = difficulty;
 
-  if (req.file) {
+  const uploadedFile = await resolveIncomingFile(req);
+  if (uploadedFile) {
     const previous = {
       fileUrl: material.fileUrl,
       filePublicId: material.filePublicId,
       fileResourceType: material.fileResourceType,
     };
-    const { url, publicId, resourceType } = await persistUploadedMaterial(req.file);
-    material.fileUrl = url;
-    material.fileType = detectFileType(req.file.originalname);
-    material.fileName = req.file.originalname;
-    material.fileSize = req.file.size;
-    material.filePublicId = publicId;
-    material.fileResourceType = resourceType;
+    Object.assign(material, uploadedFile);
     deleteUploadedMaterial(previous);
   }
 

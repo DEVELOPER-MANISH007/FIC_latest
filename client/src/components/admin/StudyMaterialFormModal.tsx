@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FormField from "@/components/common/FormField";
 import { getIcon } from "@/constants/iconMap";
-import { createMaterial, updateMaterial } from "@/services/api/adminStudyMaterial.service";
+import { createMaterial, updateMaterial, uploadMaterialFileDirect } from "@/services/api/adminStudyMaterial.service";
 import { formatFileSize } from "@/utils/studyMaterial";
 import { useToast } from "@/context/ToastContext";
 import type { StudyMaterialItem } from "@/types";
@@ -30,6 +30,7 @@ const StudyMaterialFormModal = ({ material, onClose, onSaved }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,22 +40,34 @@ const StudyMaterialFormModal = ({ material, onClose, onSaved }: Props) => {
     if (!title.trim()) return setError("Topic/Notes title is required");
     if (!unit.trim()) return setError("Unit name is required");
     if (!material && !file) return setError("Please choose a file to upload");
+    if (file && file.size > 50 * 1024 * 1024) return setError("File is too large — the limit is 50MB");
 
-    const formData = new FormData();
-    formData.append("subject", subject.trim());
-    formData.append("title", title.trim());
-    formData.append("unit", unit.trim());
-    formData.append("description", description.trim());
-    formData.append("visibility", visibility);
-    if (file) formData.append("file", file);
+    const fields = {
+      subject: subject.trim(),
+      title: title.trim(),
+      unit: unit.trim(),
+      description: description.trim(),
+      visibility,
+    };
 
     setLoading(true);
     try {
+      let payload: Record<string, unknown> = fields;
+
+      if (file) {
+        // Uploads straight to Cloudinary from the browser — this is what
+        // lets large PDFs/images succeed on Vercel, since the file bytes
+        // never pass through our serverless function's body-size limit.
+        setUploadPercent(0);
+        const uploaded = await uploadMaterialFileDirect(file, setUploadPercent);
+        payload = { ...fields, ...uploaded };
+      }
+
       if (material) {
-        await updateMaterial(material._id, formData);
+        await updateMaterial(material._id, payload);
         toast.success("Study material updated successfully");
       } else {
-        await createMaterial(formData);
+        await createMaterial(payload);
         toast.success("Study material uploaded successfully");
       }
       onSaved();
@@ -64,6 +77,7 @@ const StudyMaterialFormModal = ({ material, onClose, onSaved }: Props) => {
       toast.error(msg);
     } finally {
       setLoading(false);
+      setUploadPercent(null);
     }
   };
 
@@ -154,7 +168,13 @@ const StudyMaterialFormModal = ({ material, onClose, onSaved }: Props) => {
           {error && <p className="text-[12.5px] text-red-500">{error}</p>}
 
           <button type="submit" disabled={loading} className="btn btn-primary w-full">
-            {loading ? "Saving..." : material ? "Update Material" : "Upload Material"}
+            {loading
+              ? uploadPercent !== null
+                ? `Uploading... ${uploadPercent}%`
+                : "Saving..."
+              : material
+              ? "Update Material"
+              : "Upload Material"}
           </button>
         </form>
       </div>

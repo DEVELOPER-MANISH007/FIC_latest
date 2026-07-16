@@ -1,5 +1,7 @@
+// MUST be the first import — see config/loadEnv.js for why.
+import "./config/loadEnv.js";
+
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -15,10 +17,6 @@ import isServerless from "./utils/isServerless.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config({
-  path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env.development.local")],
-});
 
 if (!process.env.JWT_SECRET) {
   if (process.env.NODE_ENV === "production") {

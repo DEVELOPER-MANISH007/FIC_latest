@@ -10,6 +10,11 @@ const __dirname = path.dirname(__filename);
 
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 
+// Same allow-list enforced by middleware/uploadMaterial.js — kept in sync so
+// the signed direct-upload path (which never touches Multer) is validated
+// just as strictly before we hand out a Cloudinary signature.
+export const ALLOWED_MATERIAL_EXTENSIONS = /\.(pdf|zip|docx?|pptx?|jpe?g|png|webp)$/i;
+
 const extOf = (filename) => path.extname(filename).replace(".", "").toLowerCase();
 
 /** Maps a file's extension to the friendly `fileType` stored on StudyMaterial. */
@@ -24,7 +29,7 @@ export const detectFileType = (filename) => {
 };
 
 /** Cloudinary treats images specially (transformations); everything else is "raw". */
-const resourceTypeFor = (filename) => (IMAGE_EXTENSIONS.has(extOf(filename)) ? "image" : "raw");
+export const resourceTypeFor = (filename) => (IMAGE_EXTENSIONS.has(extOf(filename)) ? "image" : "raw");
 
 const uploadBufferToCloudinary = (buffer, folder, resourceType) =>
   new Promise((resolve, reject) => {
@@ -64,6 +69,43 @@ export async function persistUploadedMaterial(file, subfolder = "study-materials
   }
 
   return { url: `/uploads/${subfolder}/${file.filename}`, publicId: "", resourceType };
+}
+
+/**
+ * Builds a signed-upload payload the browser can use to send a file
+ * *directly* to Cloudinary, bypassing our Vercel serverless function
+ * entirely (Vercel's ~4.5MB request-body ceiling only applies to requests
+ * that pass through our function — a browser → Cloudinary request never
+ * does). Only the API secret ever touches this signature; api_key and
+ * cloud_name are safe to hand to the browser (Cloudinary expects that).
+ *
+ * @param {string} originalFilename — used only to pick folder/resource_type.
+ */
+export function buildMaterialUploadSignature(originalFilename, subfolder = "study-materials") {
+  if (!isCloudinaryConfigured) {
+    throw new Error("Cloudinary is not configured (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET)");
+  }
+  if (!ALLOWED_MATERIAL_EXTENSIONS.test(originalFilename || "")) {
+    throw new Error("Unsupported file type. Upload a PDF, ZIP, DOC(X), PPT(X), or image file.");
+  }
+
+  const folder = `fic/${subfolder}`;
+  const resourceType = resourceTypeFor(originalFilename);
+  const timestamp = Math.round(Date.now() / 1000);
+
+  // Only params actually sent to Cloudinary's /upload endpoint need to be
+  // signed — resource_type/api_key/file are not part of the signed payload.
+  const paramsToSign = { folder, timestamp };
+  const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET);
+
+  return {
+    signature,
+    timestamp,
+    folder,
+    resourceType,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  };
 }
 
 /**
