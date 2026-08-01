@@ -21,6 +21,19 @@ export const updateExam = async (id: string, payload: Partial<ExamConfig>) => {
   return res.data.data;
 };
 
+export interface AssignExamPayload {
+  assignToAll: boolean;
+  batches?: string[];
+  students?: string[];
+  excludedStudents?: string[];
+}
+
+/** Student-wise / Batch-wise Test Assignment — activates the test and saves who can see it. */
+export const assignExam = async (id: string, payload: AssignExamPayload) => {
+  const res = await api.patch<ApiResponse<ExamConfig>>(`/admin/exams/${id}/assign`, payload);
+  return res.data.data;
+};
+
 export const deleteExam = async (id: string) => {
   await api.delete(`/admin/exams/${id}`);
 };

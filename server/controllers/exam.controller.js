@@ -1,18 +1,24 @@
 import Exam from "../models/Exam.js";
 import Question from "../models/Question.js";
+import Student from "../models/Student.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { parseExcelBuffer, normalizeQuestionRow } from "../utils/excelHelper.js";
+import { canStudentAccessExam, examVisibilityFilter } from "../utils/examAccess.js";
 
 /**
  * @route GET /api/exams
  * @desc  List active exams — used by the Student Dashboard
- *        ("My Tests" / "Upcoming Tests").
+ *        ("My Tests" / "Upcoming Tests"). Only exams the student has been
+ *        assigned (or that are open to everyone) are returned.
  * @access Student
  */
 export const getActiveExams = asyncHandler(async (req, res) => {
-  const exams = await Exam.find({ isActive: true }).sort({ createdAt: -1 });
+  const exams = await Exam.find({
+    isActive: true,
+    ...examVisibilityFilter(req.student._id),
+  }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, exams));
 });
 
@@ -22,7 +28,11 @@ export const getActiveExams = asyncHandler(async (req, res) => {
  */
 export const getExamById = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(req.params.id);
-  if (!exam || !exam.isActive) throw new ApiError(404, "Test not found or is no longer active");
+  // Same "not found" response whether the test is inactive or simply not
+  // assigned to this student — never reveal that an unassigned test exists.
+  if (!exam || !exam.isActive || !canStudentAccessExam(exam, req.student._id)) {
+    throw new ApiError(404, "Test not found or is no longer active");
+  }
   return res.status(200).json(new ApiResponse(200, exam));
 });
 
@@ -109,6 +119,49 @@ export const updateExam = asyncHandler(async (req, res) => {
   const exam = await Exam.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
   if (!exam) throw new ApiError(404, "Test not found");
   return res.status(200).json(new ApiResponse(200, exam, "Test updated"));
+});
+
+/**
+ * @route PATCH /api/admin/exams/:id/assign
+ * @desc  Student-wise / Batch-wise Test Assignment — saves who can see
+ *        this test and (re)activates it. Batch names are resolved to
+ *        concrete student IDs here, on the server, and merged with any
+ *        individually added students, minus any individually removed
+ *        ones — the resulting `assignedStudents` list is the single
+ *        source of truth checked by the student-facing endpoints.
+ * @access Admin
+ */
+export const assignExam = asyncHandler(async (req, res) => {
+  const exam = await Exam.findById(req.params.id);
+  if (!exam) throw new ApiError(404, "Test not found");
+
+  const assignToAll = !!req.body.assignToAll;
+
+  if (assignToAll) {
+    exam.assignToAll = true;
+    exam.assignedStudents = [];
+  } else {
+    const batches = Array.isArray(req.body.batches) ? req.body.batches.filter(Boolean) : [];
+    const students = Array.isArray(req.body.students) ? req.body.students.filter(Boolean) : [];
+    const excludedStudents = new Set(
+      (Array.isArray(req.body.excludedStudents) ? req.body.excludedStudents : []).map(String)
+    );
+
+    const batchStudentIds = batches.length
+      ? (await Student.find({ batch: { $in: batches } }).select("_id")).map((s) => String(s._id))
+      : [];
+
+    const finalIds = new Set([...batchStudentIds, ...students.map(String)]);
+    excludedStudents.forEach((id) => finalIds.delete(id));
+
+    exam.assignToAll = false;
+    exam.assignedStudents = Array.from(finalIds);
+  }
+
+  exam.isActive = true;
+  await exam.save();
+
+  return res.status(200).json(new ApiResponse(200, exam, "Test activated and assignment saved"));
 });
 
 /**

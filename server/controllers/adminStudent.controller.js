@@ -32,7 +32,15 @@ export const getStudents = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.keyword) {
     const re = new RegExp(req.query.keyword, "i");
-    filter.$or = [{ name: re }, { email: re }, { username: re }, { phone: re }, { course: re }, { batch: re }];
+    filter.$or = [
+      { name: re },
+      { email: re },
+      { username: re },
+      { phone: re },
+      { course: re },
+      { batch: re },
+      { studentIdCode: re },
+    ];
   }
 
   const [items, total] = await Promise.all([
@@ -46,6 +54,16 @@ export const getStudents = asyncHandler(async (req, res) => {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     })
   );
+});
+
+/**
+ * @route GET /api/admin/students/batches
+ * @desc  Distinct, non-empty batch/class names currently in use — powers
+ *        the "Batch Selection" option in the Test Assignment popup.
+ */
+export const getStudentBatches = asyncHandler(async (req, res) => {
+  const batches = await Student.distinct("batch", { batch: { $nin: [null, ""] } });
+  return res.status(200).json(new ApiResponse(200, batches.sort((a, b) => a.localeCompare(b))));
 });
 
 /**

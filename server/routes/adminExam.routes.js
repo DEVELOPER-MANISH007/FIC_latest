@@ -4,6 +4,7 @@ import {
   getAdminExamById,
   createExam,
   updateExam,
+  assignExam,
   deleteExam,
   addExamQuestion,
   updateExamQuestion,
@@ -22,6 +23,9 @@ router.get("/", getAllExams);
 router.post("/", createExam);
 router.get("/:id", getAdminExamById);
 router.put("/:id", updateExam);
+// Student-wise / Batch-wise Test Assignment — activates the test and
+// saves who it's visible to in one step (see Test Assignment popup).
+router.patch("/:id/assign", assignExam);
 router.delete("/:id", deleteExam);
 
 // Test Builder — questions scoped to one test only

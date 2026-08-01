@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getStudents,
+  getStudentBatches,
   getStudentProfile,
   createStudent,
   updateStudent,
@@ -18,6 +19,8 @@ router.use(protectAdmin);
 
 router.get("/", getStudents);
 router.post("/", createStudent);
+// Must come before "/:id" or "batches" would be parsed as a student id.
+router.get("/batches", getStudentBatches);
 router.get("/:id", getStudentProfile);
 router.put("/:id", updateStudent);
 router.patch("/:id/disable", toggleStudentStatus);

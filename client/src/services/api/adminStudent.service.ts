@@ -34,6 +34,12 @@ export const fetchStudents = async (params: { page?: number; limit?: number; key
   };
 };
 
+/** Distinct, non-empty batch/class names in use — powers Batch Selection in the Test Assignment popup. */
+export const fetchStudentBatches = async () => {
+  const res = await api.get<ApiResponse<string[]>>("/admin/students/batches");
+  return res.data.data || [];
+};
+
 export const fetchStudentProfile = async (id: string) => {
   const res = await api.get<ApiResponse<{ student: RawStudent; results: ExamResult[] }>>(
     `/admin/students/${id}`

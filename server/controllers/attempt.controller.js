@@ -6,6 +6,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { shuffleArray, shuffleOptionOrder } from "../utils/shuffle.js";
+import { canStudentAccessExam } from "../utils/examAccess.js";
 
 const VIOLATION_TYPES = [
   "fullscreen-exit",
@@ -193,7 +194,11 @@ const finalizeAttempt = async (attemptDoc, autoSubmitReason = "") => {
  */
 export const startAttempt = asyncHandler(async (req, res) => {
   const exam = await Exam.findById(req.params.examId);
-  if (!exam || !exam.isActive) throw new ApiError(404, "Test not found or is no longer active");
+  // Same check as the listing/detail endpoints — a student who is not
+  // assigned this test cannot start it even by calling the API directly.
+  if (!exam || !exam.isActive || !canStudentAccessExam(exam, req.student._id)) {
+    throw new ApiError(404, "Test not found or is no longer active");
+  }
 
   const existingResult = await Result.findOne({ student: req.student._id, exam: exam._id });
   if (existingResult && !exam.allowRetest) {

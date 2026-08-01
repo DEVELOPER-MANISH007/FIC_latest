@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
+import TestAssignmentModal from "@/components/admin/TestAssignmentModal";
 import { fetchAllExams, updateExam, deleteExam } from "@/services/api/adminExam.service";
 import type { ExamConfig } from "@/types";
 
@@ -12,6 +13,7 @@ import type { ExamConfig } from "@/types";
 const AdminExams = () => {
   const [exams, setExams] = useState<ExamConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assigningExam, setAssigningExam] = useState<ExamConfig | null>(null);
 
   const load = () =>
     fetchAllExams()
@@ -23,7 +25,13 @@ const AdminExams = () => {
   }, []);
 
   const toggleActive = async (exam: ExamConfig) => {
-    await updateExam(exam._id, { isActive: !exam.isActive });
+    // Activating opens the Test Assignment popup so the admin can choose
+    // who gets access before the test goes live. Deactivating stays instant.
+    if (!exam.isActive) {
+      setAssigningExam(exam);
+      return;
+    }
+    await updateExam(exam._id, { isActive: false });
     load();
   };
 
@@ -75,6 +83,11 @@ const AdminExams = () => {
                     <Link to={`/admin/exams/${exam._id}/builder`} className="text-[var(--royal)] font-medium hover:underline">
                       Edit
                     </Link>
+                    {exam.isActive && (
+                      <button onClick={() => setAssigningExam(exam)} className="text-[var(--royal)] font-medium hover:underline">
+                        Manage Access
+                      </button>
+                    )}
                     <button onClick={() => handleDelete(exam._id)} className="text-red-500 font-medium hover:underline">
                       Delete
                     </button>
@@ -92,6 +105,17 @@ const AdminExams = () => {
           </tbody>
         </table>
       </div>
+
+      {assigningExam && (
+        <TestAssignmentModal
+          exam={assigningExam}
+          onClose={() => setAssigningExam(null)}
+          onSaved={() => {
+            setAssigningExam(null);
+            load();
+          }}
+        />
+      )}
     </AdminLayout>
   );
 };

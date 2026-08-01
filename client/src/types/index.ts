@@ -213,6 +213,9 @@ export interface ExamConfig {
   showExplanationAfterSubmit: boolean;
   isActive: boolean;
   createdAt: string;
+  // Student-wise / Batch-wise Test Assignment
+  assignToAll?: boolean;
+  assignedStudents?: string[];
   // Secure Exam Mode / anti-cheating configuration
   fullscreenRequired?: boolean;
   tabSwitchDetectionEnabled?: boolean;
