@@ -27,14 +27,17 @@ const TestAssignmentModal = ({ exam, onClose, onSaved }: Props) => {
   const [assignToAll, setAssignToAll] = useState(exam.assignToAll ?? true);
   const [batches, setBatches] = useState<string[]>([]);
   const [selectedBatches, setSelectedBatches] = useState<Set<string>>(new Set());
-  // Explicitly added students (by search) that aren't covered by a selected batch.
+  // Explicitly added students that aren't covered by a selected batch.
   const [individualStudents, setIndividualStudents] = useState<Map<string, StudentUser>>(new Map());
-  // Students explicitly unchecked even though a selected batch would otherwise include them.
+  // Students explicitly unchecked even though "select all" or a selected batch would otherwise include them.
   const [excludedStudents, setExcludedStudents] = useState<Set<string>>(new Set());
 
+  // Full student directory, loaded once so the popup can show every student
+  // immediately; search only filters what's already on screen.
+  const [allStudents, setAllStudents] = useState<StudentUser[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
   const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<StudentUser[]>([]);
-  const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -46,30 +49,60 @@ const TestAssignmentModal = ({ exam, onClose, onSaved }: Props) => {
       .catch(() => setBatches([]));
   }, []);
 
-  // Debounced search-as-you-type by name or Student ID.
+  // Load the complete student directory (paginating over the existing
+  // /admin/students endpoint) so the list is fully visible without searching.
   useEffect(() => {
-    if (!search.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
-    const timer = setTimeout(() => {
-      fetchStudents({ keyword: search.trim(), limit: 20 })
-        .then((res) => setSearchResults(res.items || []))
-        .catch(() => setSearchResults([]))
-        .finally(() => setSearching(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    let cancelled = false;
+    const loadAll = async () => {
+      setLoadingStudents(true);
+      try {
+        const limit = 100;
+        const first = await fetchStudents({ page: 1, limit });
+        let items = first.items || [];
+        const pages = first.pagination?.pages ?? 1;
+        for (let page = 2; page <= pages; page++) {
+          const next = await fetchStudents({ page, limit });
+          items = items.concat(next.items || []);
+        }
+        if (!cancelled) setAllStudents(items);
+      } catch {
+        if (!cancelled) setAllStudents([]);
+      } finally {
+        if (!cancelled) setLoadingStudents(false);
+      }
+    };
+    loadAll();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Pre-select students who already have access to this test.
+  useEffect(() => {
+    if (!allStudents.length) return;
+    if (exam.assignToAll) return;
+    const assigned = exam.assignedStudents;
+    if (!assigned || assigned.length === 0) return;
+    const assignedSet = new Set(assigned.map(String));
+    const preselected = new Map<string, StudentUser>();
+    allStudents.forEach((s) => {
+      if (assignedSet.has(s.id)) preselected.set(s.id, s);
+    });
+    if (preselected.size > 0) setIndividualStudents(preselected);
+    // Only needs to run once, as soon as the full student list is available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allStudents.length]);
 
   const isEffectivelySelected = (student: StudentUser) => {
-    if (individualStudents.has(student.id)) return true;
     if (excludedStudents.has(student.id)) return false;
+    if (assignToAll) return true;
+    if (individualStudents.has(student.id)) return true;
     return !!student.batch && selectedBatches.has(student.batch);
   };
 
   const handleSelectAll = () => {
     setAssignToAll(true);
+    setExcludedStudents(new Set());
     setError("");
   };
 
@@ -91,8 +124,21 @@ const TestAssignmentModal = ({ exam, onClose, onSaved }: Props) => {
   };
 
   const toggleStudent = (student: StudentUser) => {
-    setAssignToAll(false);
     const selected = isEffectivelySelected(student);
+
+    if (assignToAll) {
+      // Ticking a single student off "everyone" — switch to an explicit
+      // selection of everyone currently loaded, minus this student.
+      setAssignToAll(false);
+      setSelectedBatches(new Set());
+      setExcludedStudents(new Set());
+      const everyoneElse = new Map<string, StudentUser>();
+      allStudents.forEach((s) => {
+        if (s.id !== student.id) everyoneElse.set(s.id, s);
+      });
+      setIndividualStudents(everyoneElse);
+      return;
+    }
 
     if (selected) {
       // Deselecting: drop it if it was an individual add, otherwise it's
@@ -119,6 +165,26 @@ const TestAssignmentModal = ({ exam, onClose, onSaved }: Props) => {
 
   const selectedBatchList = useMemo(() => Array.from(selectedBatches), [selectedBatches]);
   const individualList = useMemo(() => Array.from(individualStudents.values()), [individualStudents]);
+
+  // Search only filters the already-loaded list on screen — it never fires a
+  // separate request and never replaces the list with different results.
+  const visibleStudents = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return allStudents;
+    return allStudents.filter(
+      (s) =>
+        s.name?.toLowerCase().includes(q) ||
+        s.studentIdCode?.toLowerCase().includes(q) ||
+        s.batch?.toLowerCase().includes(q) ||
+        s.email?.toLowerCase().includes(q)
+    );
+  }, [allStudents, search]);
+
+  const selectedCount = useMemo(
+    () => allStudents.reduce((count, s) => count + (isEffectivelySelected(s) ? 1 : 0), 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allStudents, assignToAll, individualStudents, excludedStudents, selectedBatches]
+  );
 
   const handleSave = async () => {
     setError("");
@@ -180,69 +246,69 @@ const TestAssignmentModal = ({ exam, onClose, onSaved }: Props) => {
         </div>
 
         {!assignToAll && (
-          <div className="space-y-6">
+          <div className="mb-6">
             {/* Batch Selection */}
-            <div>
-              <h3 className="text-[13.5px] font-semibold mb-2">Batch Selection</h3>
-              {batches.length === 0 ? (
-                <p className="text-[12.5px] text-[var(--ink-soft)]">No batches found yet.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {batches.map((batch) => (
-                    <label
-                      key={batch}
-                      className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12.5px] cursor-pointer ${
-                        selectedBatches.has(batch) ? "border-[var(--royal)] bg-[var(--royal)]/10 font-medium" : "border-[var(--line)]"
-                      }`}
-                    >
-                      <input type="checkbox" checked={selectedBatches.has(batch)} onChange={() => toggleBatch(batch)} />
-                      {batch}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Individual Student Selection */}
-            <div>
-              <h3 className="text-[13.5px] font-semibold mb-2">Individual Student Selection</h3>
-              <div className="relative mb-3">
-                <SearchIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-soft)]" />
-                <input
-                  className="field !pl-9"
-                  placeholder="Search by Student ID or Name"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+            <h3 className="text-[13.5px] font-semibold mb-2">Batch Selection</h3>
+            {batches.length === 0 ? (
+              <p className="text-[12.5px] text-[var(--ink-soft)]">No batches found yet.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {batches.map((batch) => (
+                  <label
+                    key={batch}
+                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12.5px] cursor-pointer ${
+                      selectedBatches.has(batch) ? "border-[var(--royal)] bg-[var(--royal)]/10 font-medium" : "border-[var(--line)]"
+                    }`}
+                  >
+                    <input type="checkbox" checked={selectedBatches.has(batch)} onChange={() => toggleBatch(batch)} />
+                    {batch}
+                  </label>
+                ))}
               </div>
-
-              {searching && <p className="text-[12.5px] text-[var(--ink-soft)]">Searching...</p>}
-
-              {!searching && search.trim() && searchResults.length === 0 && (
-                <p className="text-[12.5px] text-[var(--ink-soft)]">No students match "{search.trim()}".</p>
-              )}
-
-              <div className="max-h-48 overflow-y-auto rounded-xl border border-[var(--line)] divide-y divide-[var(--line)]">
-                {searchResults.length === 0 && individualList.length === 0 ? (
-                  !search.trim() && <p className="text-[12.5px] text-[var(--ink-soft)] p-4">Search to find and add specific students.</p>
-                ) : (
-                  (searchResults.length ? searchResults : individualList).map((student) => (
-                    <label key={student.id} className="flex items-center gap-3 px-4 py-2.5 text-[13px] cursor-pointer hover:bg-[var(--line)]/20">
-                      <input type="checkbox" checked={isEffectivelySelected(student)} onChange={() => toggleStudent(student)} />
-                      <span className="font-medium">{student.studentIdCode || "—"}</span>
-                      <span className="text-[var(--ink-soft)]">{student.name}</span>
-                      {student.batch && <span className="ml-auto text-[11.5px] text-[var(--ink-soft)]">{student.batch}</span>}
-                    </label>
-                  ))
-                )}
-              </div>
-
-              {individualList.length > 0 && (
-                <p className="text-[12px] text-[var(--ink-soft)] mt-2">{individualList.length} student(s) individually added.</p>
-              )}
-            </div>
+            )}
           </div>
         )}
+
+        {/* Student List — every student is shown with a checkbox as soon as the
+            popup opens; search only filters what's already here. */}
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <h3 className="text-[13.5px] font-semibold">
+              Students <span className="font-medium text-[var(--royal)]">Selected: {selectedCount} Students</span>
+            </h3>
+            <div className="relative w-full sm:w-60">
+              <SearchIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-soft)]" />
+              <input
+                className="field !pl-9"
+                placeholder="Search by Student ID or Name"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {loadingStudents ? (
+            <p className="text-[12.5px] text-[var(--ink-soft)]">Loading students...</p>
+          ) : visibleStudents.length === 0 ? (
+            <p className="text-[12.5px] text-[var(--ink-soft)]">
+              {search.trim() ? `No students match "${search.trim()}".` : "No students found."}
+            </p>
+          ) : (
+            <div className="max-h-72 overflow-y-auto rounded-xl border border-[var(--line)] divide-y divide-[var(--line)]">
+              {visibleStudents.map((student) => (
+                <label
+                  key={student.id}
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] cursor-pointer hover:bg-[var(--line)]/20"
+                >
+                  <input type="checkbox" checked={isEffectivelySelected(student)} onChange={() => toggleStudent(student)} />
+                  <span className="font-medium">{student.studentIdCode || "—"}</span>
+                  <span className="text-[var(--ink-soft)]">{student.name}</span>
+                  {student.batch && <span className="ml-auto text-[11.5px] text-[var(--ink-soft)]">{student.batch}</span>}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
 
         {error && <p className="text-[12.5px] text-red-500 mt-5">{error}</p>}
 
