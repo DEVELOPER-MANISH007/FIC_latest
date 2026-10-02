@@ -10,7 +10,7 @@ import { COURSES_FALLBACK } from "@/constants/siteData";
 export const fetchCourses = async (): Promise<Course[]> => {
   try {
     const { data } = await api.get<ApiResponse<Course[]>>("/courses");
-    return data.data?.length ? data.data : COURSES_FALLBACK;
+    return data.data || [];
   } catch {
     return COURSES_FALLBACK;
   }

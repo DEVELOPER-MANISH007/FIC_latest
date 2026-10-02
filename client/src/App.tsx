@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingButtons from "@/components/layout/FloatingButtons";
@@ -10,45 +10,55 @@ import AdminProtectedRoute from "@/components/common/AdminProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { WebsiteProvider } from "@/context/WebsiteContext";
 
 import Home from "@/pages/Home";
 import Library from "@/pages/Library";
 import NotFound from "@/pages/NotFound";
 
-import StudentLogin from "@/pages/student/StudentLogin";
-import ForgotPassword from "@/pages/student/ForgotPassword";
-import ResetPassword from "@/pages/student/ResetPassword";
-import StudentDashboard from "@/pages/student/StudentDashboard";
-import StudentProfile from "@/pages/student/StudentProfile";
-import StudentTests from "@/pages/student/StudentTests";
-import StudentAttempted from "@/pages/student/StudentAttempted";
-import StudentResults from "@/pages/student/StudentResults";
-import StudentPerformance from "@/pages/student/StudentPerformance";
-import StudentChangePassword from "@/pages/student/StudentChangePassword";
-import StudentStudyMaterial from "@/pages/student/StudentStudyMaterial";
-import MyNotes from "@/pages/student/MyNotes";
-import ExamPage from "@/pages/student/ExamPage";
-import ResultPage from "@/pages/student/ResultPage";
+const StudentLogin = lazy(() => import("@/pages/student/StudentLogin"));
+const ForgotPassword = lazy(() => import("@/pages/student/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/student/ResetPassword"));
+const StudentDashboard = lazy(() => import("@/pages/student/StudentDashboard"));
+const StudentProfile = lazy(() => import("@/pages/student/StudentProfile"));
+const StudentTests = lazy(() => import("@/pages/student/StudentTests"));
+const StudentAttempted = lazy(() => import("@/pages/student/StudentAttempted"));
+const StudentResults = lazy(() => import("@/pages/student/StudentResults"));
+const StudentPerformance = lazy(() => import("@/pages/student/StudentPerformance"));
+const StudentChangePassword = lazy(() => import("@/pages/student/StudentChangePassword"));
+const StudentStudyMaterial = lazy(() => import("@/pages/student/StudentStudyMaterial"));
+const MyNotes = lazy(() => import("@/pages/student/MyNotes"));
+const ExamPage = lazy(() => import("@/pages/student/ExamPage"));
+const ResultPage = lazy(() => import("@/pages/student/ResultPage"));
 
-import AdminLogin from "@/pages/admin/AdminLogin";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminAdmissions from "@/pages/admin/AdminAdmissions";
-import AdminEnquiries from "@/pages/admin/AdminEnquiries";
-import AdminQuestions from "@/pages/admin/AdminQuestions";
-import AdminCategories from "@/pages/admin/AdminCategories";
-import AdminExams from "@/pages/admin/AdminExams";
-import AdminTestBuilder from "@/pages/admin/AdminTestBuilder";
-import AdminStudents from "@/pages/admin/AdminStudents";
-import AdminStudentProfile from "@/pages/admin/AdminStudentProfile";
-import AdminResults from "@/pages/admin/AdminResults";
-import AdminAnalytics from "@/pages/admin/AdminAnalytics";
-import AdminAttemptLogs from "@/pages/admin/AdminAttemptLogs";
-import AdminStudyMaterials from "@/pages/admin/AdminStudyMaterials";
-import AdminStudyCourses from "@/pages/admin/AdminStudyCourses";
+const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminAdmissions = lazy(() => import("@/pages/admin/AdminAdmissions"));
+const AdminEnquiries = lazy(() => import("@/pages/admin/AdminEnquiries"));
+const AdminQuestions = lazy(() => import("@/pages/admin/AdminQuestions"));
+const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
+const AdminExams = lazy(() => import("@/pages/admin/AdminExams"));
+const AdminTestBuilder = lazy(() => import("@/pages/admin/AdminTestBuilder"));
+const AdminStudents = lazy(() => import("@/pages/admin/AdminStudents"));
+const AdminStudentProfile = lazy(() => import("@/pages/admin/AdminStudentProfile"));
+const AdminResults = lazy(() => import("@/pages/admin/AdminResults"));
+const AdminAnalytics = lazy(() => import("@/pages/admin/AdminAnalytics"));
+const AdminAttemptLogs = lazy(() => import("@/pages/admin/AdminAttemptLogs"));
+const AdminStudyMaterials = lazy(() => import("@/pages/admin/AdminStudyMaterials"));
+const AdminStudyCourses = lazy(() => import("@/pages/admin/AdminStudyCourses"));
+const AdminWebsite = lazy(() => import("@/pages/admin/AdminWebsite"));
+const PublicNotices = lazy(() => import("@/pages/PublicNotices"));
+import { Link } from "react-router-dom";
+import { useWebsite } from "@/context/WebsiteContext";
 
 /** Wraps a public marketing-site page with the original Navbar/Footer/floating UI. */
-const PublicSiteLayout = ({ children }: { children: ReactNode }) => (
-  <>
+const PublicSiteLayout = ({ children }: { children: ReactNode }) => {
+  const { settings, notices } = useWebsite();
+  const announcement = settings.homepage?.announcement;
+  const visibleNotice = notices.find((notice) => notice.pinned) || notices[0];
+  const showAnnouncement = announcement?.enabled && settings.websiteSettings?.showHomepageAnnouncement !== false;
+  return <>
+    {showAnnouncement && <div className="fixed inset-x-0 top-0 z-[60] bg-[var(--navy)] px-4 py-2 text-center text-xs font-medium text-white sm:text-sm"><Link to={announcement.href || visibleNotice?.link || "/notices"} className="underline-offset-2 hover:underline">{announcement.label || "Notice"}: {announcement.text || visibleNotice?.title || "View institute updates"} →</Link></div>}
     <a
       href="#main"
       className="sr-only focus:not-sr-only fixed top-2 left-2 z-[100] bg-white px-4 py-2 rounded-lg font-semibold"
@@ -60,21 +70,23 @@ const PublicSiteLayout = ({ children }: { children: ReactNode }) => (
     <Footer />
     <FloatingButtons />
     <MobileStickyCta />
-  </>
-);
+  </>;
+};
 
 const App = () => (
   <ErrorBoundary>
     <ToastProvider>
       <AuthProvider>
         <AdminAuthProvider>
+          <WebsiteProvider>
           <BrowserRouter>
-          <Routes>
+          <Suspense fallback={<div className="min-h-[40vh] grid place-items-center text-sm text-[var(--ink-soft)]" role="status">Loading page…</div>}><Routes>
             {/* Public marketing site — unchanged design */}
             <Route path="/" element={<PublicSiteLayout><Home /></PublicSiteLayout>} />
 
             {/* Public Digital Library — Public-visibility notes, no login required */}
             <Route path="/library" element={<PublicSiteLayout><Library /></PublicSiteLayout>} />
+            <Route path="/notices" element={<PublicSiteLayout><PublicNotices /></PublicSiteLayout>} />
 
             {/* Student Portal auth (public) */}
             <Route path="/login" element={<StudentLogin />} />
@@ -103,6 +115,7 @@ const App = () => (
             <Route element={<AdminProtectedRoute />}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/website" element={<AdminWebsite />} />
               <Route path="/admin/admissions" element={<AdminAdmissions />} />
               <Route path="/admin/enquiries" element={<AdminEnquiries />} />
               <Route path="/admin/questions" element={<AdminQuestions />} />
@@ -120,9 +133,10 @@ const App = () => (
             </Route>
 
             <Route path="*" element={<NotFound />} />
-          </Routes>
+          </Routes></Suspense>
         </BrowserRouter>
-      </AdminAuthProvider>
+          </WebsiteProvider>
+        </AdminAuthProvider>
     </AuthProvider>
     </ToastProvider>
   </ErrorBoundary>

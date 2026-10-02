@@ -8,7 +8,8 @@
     "start": "node server/server.js",
     "seed": "node server/seed/seed.js",
     "seed:exam": "node server/seed/seedExam.js",
-    "seed:admin": "node server/seed/seedAdmin.js"
+    "seed:admin": "node server/seed/seedAdmin.js",
+    "migrate:website-cms": "node server/migrations/migrateWebsiteCms.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",

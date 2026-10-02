@@ -1,7 +1,11 @@
 import Reveal from "@/components/common/Reveal";
 import SectionEyebrow from "@/components/common/SectionEyebrow";
+import { useWebsite } from "@/context/WebsiteContext";
 
-const DemoClass = () => (
+const DemoClass = () => {
+  const { settings } = useWebsite();
+  const content = settings.homepage?.sections?.demoClass || {};
+  return (
   <section className="py-16 lg:py-20">
     <div className="container-x">
       <Reveal>
@@ -10,17 +14,15 @@ const DemoClass = () => (
           style={{ background: "linear-gradient(120deg,var(--navy-soft),var(--navy))" }}
         >
           <div>
-            <SectionEyebrow variant="dark">Try Before You Commit</SectionEyebrow>
+            <SectionEyebrow variant="dark">{content.eyebrow || "Try Before You Commit"}</SectionEyebrow>
             <h2 className="font-display font-bold text-2xl lg:text-3xl text-white mt-4">
-              Experience Before You Decide
+              {content.title || "Experience Before You Decide"}
             </h2>
             <p className="text-[#C6CEEF] mt-4 leading-relaxed">
-              Students are welcome to attend demo classes for approximately 5–7 days before taking admission —
-              helping them understand the teaching style, classroom environment and learning experience
-              firsthand.
+              {content.description || "Students are welcome to attend demo classes for approximately 5–7 days before taking admission — helping them understand the teaching style, classroom environment and learning experience firsthand."}
             </p>
-            <a href="#admission" className="btn btn-primary mt-7">
-              Book a Demo
+            <a href={content.buttonHref || "#admission"} className="btn btn-primary mt-7">
+              {content.buttonText || "Book a Demo"}
             </a>
           </div>
           <div className="flex justify-center lg:justify-end">
@@ -39,6 +41,7 @@ const DemoClass = () => (
       </Reveal>
     </div>
   </section>
-);
+  );
+};
 
 export default DemoClass;

@@ -1,16 +1,24 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { SITE, TRUST_BADGES } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
 import HeroSlider from "./HeroSlider";
+import { useWebsite } from "@/context/WebsiteContext";
 
 const ArrowRightIcon = getIcon("arrowRight");
 
-const Hero = () => (
+const Hero = () => {
+  const { settings, cmsAvailable } = useWebsite();
+  const [activeBanner, setActiveBanner] = useState<Record<string, any> | null>(null);
+  const brand = settings.brand || {};
+  const hero = settings.homepage?.hero || {};
+  const badges = cmsAvailable
+    ? (Array.isArray(hero.trustBadges) ? hero.trustBadges : [])
+    : TRUST_BADGES;
+  return (
   <section id="home" className="hero-wrap flex items-center">
-    <HeroSlider />
+    <HeroSlider onBannerChange={setActiveBanner} />
     <div className="hero-bg" />
-    <div className="absolute w-72 h-72 rounded-full bg-[var(--orange)]/20 blur-3xl top-24 right-10 float-el" />
-    <div className="absolute w-56 h-56 rounded-full bg-[var(--royal)]/30 blur-3xl bottom-24 left-0 float-el delay1" />
 
     <div className="container-x relative z-10 pt-32 pb-20 w-full">
       <motion.div
@@ -20,33 +28,33 @@ const Hero = () => (
         className="max-w-3xl"
       >
         <span className="eyebrow on-dark">
-          <span className="eyebrow-dot" /> Since {SITE.establishedYear} · Veerapura, Aligarh
+          <span className="eyebrow-dot" /> {hero.eyebrow || `Since ${brand.establishedYear || SITE.establishedYear} · Veerapura, Aligarh`}
         </span>
 
         <h1 className="font-display font-extrabold text-white text-[42px] sm:text-[56px] lg:text-[68px] leading-[1.05] mt-6">
-          Future IT College
+          {activeBanner?.title || hero.title || brand.name || SITE.name}
         </h1>
-        <p className="text-[#B9C6FF] font-medium text-lg mt-3">{SITE.alternateName}</p>
+        <p className="text-[#B9C6FF] font-medium text-lg mt-3">{activeBanner?.subtitle || hero.subtitle || brand.alternateName || SITE.alternateName}</p>
 
-        <p className="font-display font-semibold text-2xl sm:text-3xl mt-6 grad-royal-text">{SITE.tagline}</p>
+        <p className="font-display font-semibold text-2xl sm:text-3xl mt-6 text-white">{brand.tagline || SITE.tagline}</p>
 
         <p className="text-[#CBD3F0] text-[16px] sm:text-[17px] leading-relaxed mt-5 max-w-xl">
-          {SITE.description}
+          {activeBanner?.description || hero.description || brand.description || SITE.description}
         </p>
 
         <div className="flex flex-wrap gap-4 mt-9">
-          <a href="#admission" className="btn btn-primary">
-            Apply for Admission
+          <a href={activeBanner?.primaryCtaHref || hero.primaryButtonHref || "#admission"} className="btn btn-primary">
+            {activeBanner?.primaryCtaText || hero.primaryButtonText || "Apply for Admission"}
             <ArrowRightIcon size={16} />
           </a>
-          <a href="#courses" className="btn btn-outline">
-            Explore Courses
+          <a href={activeBanner?.secondaryCtaHref || hero.secondaryButtonHref || "#courses"} className="btn btn-outline">
+            {activeBanner?.secondaryCtaText || hero.secondaryButtonText || "Explore Courses"}
           </a>
         </div>
 
         <div className="flex flex-wrap gap-3 mt-10">
-          {TRUST_BADGES.map((badge) => (
-            <span key={badge} className="glass text-white text-[12.5px] font-medium px-4 py-2 rounded-full">
+          {badges.map((badge: string) => (
+            <span key={badge} className="border border-white/25 bg-[#15213c]/75 text-white text-[12.5px] font-medium px-4 py-2 rounded-full">
               {badge}
             </span>
           ))}
@@ -61,6 +69,7 @@ const Hero = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default Hero;

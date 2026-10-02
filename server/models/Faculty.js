@@ -17,6 +17,9 @@ const FacultySchema = new mongoose.Schema(
       required: [true, "Qualification is required"],
       trim: true,
     },
+    subject: { type: String, trim: true, default: "", maxlength: 120 },
+    experience: { type: String, trim: true, default: "", maxlength: 120 },
+    specialization: { type: String, trim: true, default: "", maxlength: 300 },
     bio: {
       type: String,
       trim: true,

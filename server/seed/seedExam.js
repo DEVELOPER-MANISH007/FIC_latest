@@ -16,6 +16,13 @@ import Exam from "../models/Exam.js";
 
 dotenv.config({ path: [".env", "../.env.development.local"] });
 
+const adminEmail = String(process.env.SEED_ADMIN_EMAIL || "").trim().toLowerCase();
+const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+if (!adminEmail || !adminPassword) {
+  console.error("Exam seeding requires SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD; no default admin credentials are used.");
+  process.exit(1);
+}
+
 const CATEGORY_NAMES = [
   "Computer Fundamentals",
   "MS Word",
@@ -150,8 +157,6 @@ const seedExam = async () => {
 
     // 2. Default Admin
     await Admin.deleteMany({});
-    const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@futureitcollege.com";
-    const adminPassword = process.env.SEED_ADMIN_PASSWORD || "Admin@123";
     await Admin.create({ name: "Future IT College Admin", email: adminEmail, password: adminPassword, role: "superadmin" });
 
     // 3. Questions

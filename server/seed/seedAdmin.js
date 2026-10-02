@@ -1,41 +1,42 @@
 /**
- * Creates the default admin account. Run once after setup.
- * Run with: npm run seedAdmin  (from the server/ directory)
+ * Creates the configured admin account without printing its credentials.
+ * Run with: npm run seedAdmin (from the server/ directory)
  */
-import dotenv from "dotenv";
+import "../config/loadEnv.js";
 import mongoose from "mongoose";
 import connectDB from "../config/db.js";
 import Admin from "../models/Admin.js";
 
-dotenv.config({ path: [".env", "../.env.development.local"] });
-
-const DEFAULT_ADMIN = {
-  name: "Future IT College Admin",
-  email: "admin@futureitcollege.com",
-  password: "Admin@123", // change immediately after first login
-  role: "superadmin",
-};
-
 const seed = async () => {
+  const email = String(process.env.SEED_ADMIN_EMAIL || "").trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!email || !password) {
+    console.error("Admin seeding requires SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD; no default account was created.");
+    process.exitCode = 1;
+    return;
+  }
+
   try {
     await connectDB();
 
-    const existing = await Admin.findOne({ email: DEFAULT_ADMIN.email });
+    const existing = await Admin.findOne({ email });
     if (existing) {
-      console.log(`Admin already exists: ${DEFAULT_ADMIN.email}`);
+      console.log("Configured admin account already exists; leaving it unchanged.");
     } else {
-      await Admin.create(DEFAULT_ADMIN);
-      console.log("Default admin created:");
-      console.log(`  Email:    ${DEFAULT_ADMIN.email}`);
-      console.log(`  Password: ${DEFAULT_ADMIN.password}`);
-      console.log("  Please log in and change this password immediately.");
+      await Admin.create({
+        name: process.env.SEED_ADMIN_NAME || "Future IT College Admin",
+        email,
+        password,
+        role: "superadmin",
+      });
+      console.log("Configured admin account created.");
     }
-
-    await mongoose.connection.close();
-    process.exit(0);
   } catch (error) {
-    console.error("Admin seeding failed:", error);
-    process.exit(1);
+    // Avoid printing database URLs or other configuration secrets from driver errors.
+    console.error("Admin seeding failed because the database connection or account operation failed.");
+    process.exitCode = 1;
+  } finally {
+    if (mongoose.connection.readyState !== 0) await mongoose.connection.close().catch(() => {});
   }
 };
 

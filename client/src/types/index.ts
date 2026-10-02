@@ -8,6 +8,16 @@ export interface Course {
   featured?: boolean;
   badge?: string;
   order?: number;
+  shortTitle?: string;
+  eligibility?: string;
+  feeDisplay?: string;
+  image?: string;
+  features?: string[];
+  subjects?: string[];
+  batches?: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  isActive?: boolean;
 }
 
 export interface FacultyMember {
@@ -18,6 +28,10 @@ export interface FacultyMember {
   bio?: string;
   image: string;
   order?: number;
+  subject?: string;
+  experience?: string;
+  specialization?: string;
+  isActive?: boolean;
 }
 
 export interface GalleryItem {
@@ -32,6 +46,11 @@ export interface GalleryItem {
     | "Events";
   image: string;
   order?: number;
+  caption?: string;
+  eventName?: string;
+  eventDate?: string;
+  isFeatured?: boolean;
+  isActive?: boolean;
 }
 
 export interface InstituteDetails {

@@ -25,9 +25,8 @@ npm run seed:exam               # exam module: Categories, Admin, Questions, Tes
 npm run dev                     # http://localhost:5000
 ```
 
-`npm run seed:exam` prints the default admin login:
-`admin@futureitcollege.com` / `Admin@123` (change via `SEED_ADMIN_EMAIL` /
-`SEED_ADMIN_PASSWORD` in `.env` before seeding).
+The exam seeder requires `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in your
+local environment before it runs. It does not use default admin credentials.
 
 ### 2. Frontend
 

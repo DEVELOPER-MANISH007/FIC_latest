@@ -26,7 +26,7 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.name === "MulterError") {
     error.statusCode = 400;
-    error.message = err.code === "LIMIT_FILE_SIZE" ? "File is too large (max 10 MB)" : err.message;
+    error.message = err.code === "LIMIT_FILE_SIZE" ? "Image is too large (maximum 5 MB)" : err.message;
   }
 
   if (err.message?.includes("Multipart: Boundary not found")) {

@@ -53,6 +53,10 @@ h1, h2, h3, h4, .font-display {
   padding-right: 24px;
 }
 
+h1, h2, h3, h4, p, a, li, blockquote {
+  overflow-wrap: anywhere;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -143,7 +147,7 @@ h1, h2, h3, h4, .font-display {
 }
 .nav-link:hover:after { width: 100%; }
 
-.hero-wrap { min-height: 100vh; position: relative; overflow: hidden; }
+.hero-wrap { min-height: 100vh; min-height: 100svh; position: relative; overflow: hidden; }
 .hero-bg {
   position: absolute;
   inset: 0;
@@ -316,6 +320,21 @@ label.f-label { font-size: 13px; font-weight: 600; color: var(--ink); margin-bot
 @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
 #mobileCta { box-shadow: 0 -10px 30px -14px rgba(18, 41, 107, 0.35); }
+
+body.mobile-menu-open #mobileCta,
+body.mobile-menu-open #floatingButtons {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 359px) {
+  .container-x { padding-left: 16px; padding-right: 16px; }
+  .btn { gap: 7px; font-size: 14px; }
+}
+
+@media (max-width: 1023px) {
+  .btn { white-space: normal; text-align: center; }
+}
 
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 3px solid var(--orange);

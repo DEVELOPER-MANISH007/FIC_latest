@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { getIcon } from "@/constants/iconMap";
 import { HERO_IMAGES } from "@/assets/hero-images";
+import { useWebsite } from "@/context/WebsiteContext";
+import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 const ChevronLeftIcon = getIcon("chevronLeft");
 const ChevronRightIcon = getIcon("chevronRight");
@@ -14,12 +16,17 @@ const AUTOPLAY_MS = 5000;
  * hero text/buttons/overlays/spacing are completely unaffected —
  * this component only owns the background photography.
  */
-const HeroSlider = () => {
+const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<string, any> | null) => void }) => {
+  const { banners, cmsAvailable } = useWebsite();
+  const slides = banners.filter((banner) => banner.image);
+  const images = cmsAvailable ? slides.map((banner) => banner.image) : HERO_IMAGES;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const slideCount = HERO_IMAGES.length;
+  const slideCount = images.length;
+  useEffect(() => { onBannerChange?.(slides[index] || null); }, [slides, index, onBannerChange]);
+  useEffect(() => { if (index >= slideCount) setIndex(0); }, [index, slideCount]);
 
   const goTo = useCallback(
     (next: number) => {
@@ -52,9 +59,11 @@ const HeroSlider = () => {
       aria-hidden="true"
     >
       <AnimatePresence initial={false}>
+        <picture key={index}>
+        {slides[index]?.mobileImage && <source media="(max-width: 640px)" srcSet={slides[index].mobileImage.startsWith("/uploads") ? resolveImageUrl(slides[index].mobileImage) : slides[index].mobileImage} />}
         <motion.img
           key={index}
-          src={HERO_IMAGES[index]}
+          src={images[index]?.startsWith("/uploads") ? resolveImageUrl(images[index]) : images[index]}
           alt=""
           className="hero-slide-img"
           loading={index === 0 ? "eager" : "lazy"}
@@ -64,6 +73,7 @@ const HeroSlider = () => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.9, ease: "easeInOut" }}
         />
+        </picture>
       </AnimatePresence>
 
       {slideCount > 1 && (
@@ -86,7 +96,7 @@ const HeroSlider = () => {
           </button>
 
           <div className="hero-slider-dots" role="tablist" aria-label="Hero slides">
-            {HERO_IMAGES.map((_, i) => (
+            {images.map((_, i) => (
               <button
                 key={i}
                 type="button"

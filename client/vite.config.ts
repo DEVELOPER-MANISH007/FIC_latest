@@ -15,6 +15,19 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "react-vendor";
+          if (/node_modules\/(framer-motion|motion-dom|motion-utils)\//.test(id)) return "motion-vendor";
+          if (/node_modules\/react-icons\//.test(id)) return "icons-vendor";
+          return undefined;
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     host: true,

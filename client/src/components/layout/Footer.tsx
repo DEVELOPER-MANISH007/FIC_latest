@@ -2,84 +2,99 @@ import { useLocation } from "react-router-dom";
 import { SITE } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
 import logo from "@/assets/images/logo.png";
+import { useWebsite } from "@/context/WebsiteContext";
+import { resolveImageUrl } from "@/services/api/axiosInstance";
+import { FaFacebookF, FaInstagram, FaYoutube, FaLinkedinIn } from "react-icons/fa";
 
-const InstagramIcon = getIcon("checkCircle");
+const SOCIAL_ICONS: Record<string, typeof FaInstagram> = { instagram: FaInstagram, facebook: FaFacebookF, youtube: FaYoutube, linkedin: FaLinkedinIn };
 
 const Footer = () => {
   const { pathname } = useLocation();
+  const { settings, cmsAvailable } = useWebsite();
+  const brand = settings.brand || {};
+  const contact = settings.contact || {};
+  const footer = settings.footer || {};
+  const email = contact.email || (cmsAvailable ? "" : SITE.email);
+  const locationName = brand.locationName || (cmsAvailable ? "" : SITE.locationName);
+  const address = contact.address || (cmsAvailable ? {} : SITE.address);
+  const mapUrl = contact.mapUrl || (cmsAvailable ? "" : SITE.mapUrl);
+  const phones = cmsAvailable
+    ? (Array.isArray(contact.phones) ? contact.phones : [])
+    : (contact.phones?.length ? contact.phones : SITE.phones);
+  const socials = settings.socials?.filter((item: any) => item.visible && item.href) || [];
+  const footerLinks = (footer.links?.filter((item: any) => item.visible !== false).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))) || ["Courses", "Facilities", "Gallery", "Admission", "Contact"].map((label) => ({ label, href: `#${label.toLowerCase()}` }));
   const sectionHref = (hash: string) => (pathname === "/" ? hash : `/${hash}`);
+  const normalizeHref = (href: string) => href.startsWith("#") ? sectionHref(href) : href;
 
   return (
-  <footer className="grad-navy pt-16 pb-8 relative overflow-hidden">
+  <footer className="grad-navy relative overflow-hidden pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-12 sm:pt-16 lg:pb-8">
     <div className="container-x relative">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        <div>
+      <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Future IT College logo" className="w-10 h-10 rounded-xl object-cover bg-white" />
-            <div>
-              <p className="font-display font-bold text-white text-[15px]">Future IT College</p>
-              <p className="text-[10.5px] text-[#9AA4D4]">{SITE.locationName}</p>
+            <img src={(brand.logo || "").startsWith("/uploads") ? resolveImageUrl(brand.logo) : brand.logo || logo} alt={`${brand.name || SITE.name} logo`} className="w-10 h-10 rounded-xl object-cover bg-white" />
+            <div className="min-w-0">
+              <p className="font-display font-bold text-white text-[15px] [overflow-wrap:anywhere]">{brand.name || SITE.name}</p>
+              {locationName && <p className="text-[10.5px] text-[#9AA4D4] [overflow-wrap:anywhere]">{locationName}</p>}
             </div>
           </div>
           <p className="text-[13px] text-[#9AA4D4] mt-5 leading-relaxed">
-            Practical, career-focused computer education since {SITE.establishedYear}.
+            {footer.tagline || `Practical, career-focused computer education since ${brand.establishedYear || SITE.establishedYear}.`}
           </p>
           <div className="flex gap-3 mt-5">
-            {["Instagram", "Facebook", "YouTube"].map((label) => (
-              <a
-                key={label}
-                href="#"
-                aria-label={`${label} (coming soon)`}
+            {socials.map((social: any) => {
+              const Icon = SOCIAL_ICONS[String(social.label).toLowerCase()] || getIcon("globe");
+              return <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
                 className="w-9 h-9 rounded-full bg-white/8 flex items-center justify-center text-white hover:bg-white/16 transition"
               >
-                <InstagramIcon size={15} />
+                <Icon size={15} />
               </a>
-            ))}
+            })}
           </div>
         </div>
 
-        <div>
-          <p className="font-display font-semibold text-white text-[14px] mb-4">Quick Links</p>
+        <div className="min-w-0">
+          <p className="font-display font-semibold text-white text-[14px] mb-4">{footer.quickLinksTitle || "Quick Links"}</p>
           <ul className="space-y-3 text-[13.5px] text-[#9AA4D4]">
-            <li><a href={sectionHref("#courses")} className="hover:text-white transition">Courses</a></li>
-            <li><a href={sectionHref("#facilities")} className="hover:text-white transition">Facilities</a></li>
-            <li><a href={sectionHref("#gallery")} className="hover:text-white transition">Gallery</a></li>
-            <li><a href={sectionHref("#admission")} className="hover:text-white transition">Admission</a></li>
-            <li><a href={sectionHref("#contact")} className="hover:text-white transition">Contact</a></li>
+            {footerLinks.map((link: any) => <li key={`${link.label}-${link.href}`}><a href={normalizeHref(link.href)} className="hover:text-white transition">{link.label}</a></li>)}
           </ul>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <p className="font-display font-semibold text-white text-[14px] mb-4">Contact</p>
           <ul className="space-y-3 text-[13.5px] text-[#9AA4D4]">
-            {SITE.phones.map((phone) => (
-              <li key={phone}>{phone}</li>
+            {phones.map((phone: string) => (
+              <li key={phone} className="[overflow-wrap:anywhere]">{phone}</li>
             ))}
-            <li>{SITE.email}</li>
+            {email && <li className="[overflow-wrap:anywhere]">{email}</li>}
           </ul>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <p className="font-display font-semibold text-white text-[14px] mb-4">Location</p>
-          <p className="text-[13.5px] text-[#9AA4D4] leading-relaxed">
-            {SITE.locationName}
-            <br />
-            {SITE.address.city}, {SITE.address.state} – {SITE.address.pincode}
+          <p className="text-[13.5px] leading-relaxed text-[#9AA4D4] [overflow-wrap:anywhere]">
+            {locationName}
+            {(address.city || address.state || address.pincode) && <><br />{[address.city, address.state, address.pincode].filter(Boolean).join(" – ")}</>}
           </p>
-          <a
-            href={SITE.mapUrl}
+          {mapUrl && <a
+            href={mapUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[13px] text-[var(--orange-soft)] font-medium mt-3 inline-block hover:underline"
           >
             View on Google Maps →
-          </a>
+          </a>}
         </div>
       </div>
 
-      <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <p className="text-[12px] text-[#8188B8]">© {new Date().getFullYear()} Future IT College. All rights reserved.</p>
-        <p className="text-[12px] text-[#8188B8]">{SITE.locationName}</p>
+      <div className="mt-10 flex min-w-0 flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center">
+        <p className="text-[12px] text-[#8188B8] [overflow-wrap:anywhere]">{(footer.copyright || "© {year} Future IT College. All rights reserved.").replace("{year}", String(new Date().getFullYear())).replace("Future IT College", brand.name || SITE.name)}</p>
+        {locationName && <p className="text-[12px] text-[#8188B8] [overflow-wrap:anywhere]">{locationName}</p>}
       </div>
     </div>
   </footer>

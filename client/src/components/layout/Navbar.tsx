@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV_LINKS, SITE } from "@/constants/siteData";
@@ -9,6 +10,8 @@ import UserMenu from "@/components/layout/UserMenu";
 import { useAuth } from "@/context/AuthContext";
 import logo from "@/assets/images/logo.png";
 import { cn } from "@/utils/cn";
+import { useWebsite } from "@/context/WebsiteContext";
+import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 const MenuIcon = getIcon("menu");
 const CloseIcon = getIcon("close");
@@ -18,38 +21,62 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { pathname } = useLocation();
   const { student } = useAuth();
+  const { settings, cmsAvailable } = useWebsite();
+  const brand = settings.brand || {};
+  const navbar = settings.navbar || {};
+  const links = navbar.items?.filter((link: any) => link.visible !== false).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) || NAV_LINKS;
+  const instituteName = brand.name || SITE.name;
+  const instituteLocation = brand.locationName || SITE.locationName;
+  const phone = settings.contact?.phones?.[0] || (cmsAvailable ? "" : SITE.phones[0]);
   const onHome = pathname === "/";
 
   const closeDrawer = () => setDrawerOpen(false);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.classList.add("mobile-menu-open");
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.classList.remove("mobile-menu-open");
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [drawerOpen]);
 
   // Section anchors (e.g. "#courses") only resolve on the home page — from
   // any other route, point them at "/#courses" so they still land in the
   // right section instead of doing nothing.
   const sectionHref = (hash: string) => (onHome ? hash : `/${hash}`);
+  const normalizeHref = (href: string) => href.startsWith("#") ? sectionHref(href) : href;
 
   return (
-    <header id="navbar" className={cn("fixed top-0 left-0 right-0 z-50", scrolled && "solid")}>
-      <nav className="container-x flex items-center justify-between gap-4 py-3.5 min-h-[72px]">
-        <a href={sectionHref("#home")} className="flex items-center gap-3 shrink-0">
-          <img src={logo} alt="Future IT College logo" className="w-11 h-11 rounded-xl object-cover shadow-lg bg-white" />
-          <div className="leading-tight">
-            <p className={cn("font-display font-bold text-[15px]", scrolled ? "text-[var(--ink)]" : "text-white")}>
-              Future IT College
+    <header id="navbar" className={cn("fixed left-0 right-0 z-50 transition-[top]", settings.homepage?.announcement?.enabled && settings.websiteSettings?.showHomepageAnnouncement !== false ? "top-9" : "top-0", scrolled && "solid")}>
+      <nav className="container-x flex items-center justify-between gap-2 sm:gap-4 py-3.5 min-h-[72px]">
+        <a href={sectionHref("#home")} className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-[calc(100%-3.5rem)] lg:max-w-none lg:shrink-0">
+          <img src={(brand.logo || "").startsWith("/uploads") ? resolveImageUrl(brand.logo) : brand.logo || logo} alt={`${instituteName} logo`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-lg bg-white shrink-0" />
+          <div className="leading-tight min-w-0">
+            <p className={cn("font-display font-bold text-[14px] sm:text-[15px] truncate", scrolled ? "text-[var(--ink)]" : "text-white")}>
+              {instituteName}
             </p>
-            <p className={cn("text-[10.5px] tracking-wide opacity-80", scrolled ? "text-[var(--ink)]" : "text-white")}>
-              Dinesh Computer Center
+            <p className={cn("hidden sm:block text-[10.5px] tracking-wide opacity-80 truncate", scrolled ? "text-[var(--ink)]" : "text-white")}>
+              {instituteLocation}
             </p>
           </div>
         </a>
 
         <div className="hidden lg:flex flex-1 items-center justify-center gap-8 px-6">
-          {NAV_LINKS.map((link) =>
+          {links.map((link: any) =>
             link.href.startsWith("/") ? (
               <Link key={link.href} to={link.href} className="nav-link whitespace-nowrap">
                 {link.label}
               </Link>
             ) : (
-              <a key={link.href} href={sectionHref(link.href)} className="nav-link whitespace-nowrap">
+              <a key={link.href} href={normalizeHref(link.href)} className="nav-link whitespace-nowrap">
                 {link.label}
               </a>
             )
@@ -57,9 +84,9 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-4 shrink-0">
-          {student ? <UserMenu scrolled={scrolled} /> : <LoginDropdown scrolled={scrolled} />}
-          <a href={sectionHref("#admission")} className="btn btn-sm btn-primary shadow-[0_14px_30px_-10px_rgba(255,122,41,0.55)]">
-            Apply for Admission
+          {student ? <UserMenu scrolled={scrolled} /> : <LoginDropdown scrolled={scrolled} label={navbar.studentLoginLabel || "Login"} />}
+          <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} className="btn btn-sm btn-primary shadow-[0_14px_30px_-10px_rgba(255,122,41,0.55)]">
+            {navbar.admissionCtaLabel || "Apply for Admission"}
           </a>
         </div>
 
@@ -76,22 +103,26 @@ const Navbar = () => {
         </button>
       </nav>
 
-      <AnimatePresence>
+      {typeof document !== "undefined" && createPortal(<AnimatePresence>
         {drawerOpen && (
-          <div className="lg:hidden fixed inset-0 z-40">
+          <div className="lg:hidden fixed inset-0 z-[80]" role="presentation">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[var(--navy)]/60"
+              className="absolute inset-0 bg-[var(--navy)]/65"
               onClick={closeDrawer}
+              aria-hidden="true"
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.35, ease: [0.2, 0.9, 0.25, 1] }}
-              className="absolute top-0 right-0 h-full w-[78%] max-w-xs bg-white shadow-2xl flex flex-col p-6 pt-20 gap-1"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Main navigation"
+              className="fixed inset-y-0 right-0 flex h-[100dvh] w-[min(88vw,24rem)] flex-col gap-1 overflow-y-auto overscroll-contain bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] text-[var(--ink)] shadow-2xl sm:px-6"
             >
               <button
                 onClick={closeDrawer}
@@ -100,40 +131,40 @@ const Navbar = () => {
               >
                 <CloseIcon size={18} />
               </button>
-              {NAV_LINKS.map((link) =>
+              {links.map((link: any) =>
                 link.href.startsWith("/") ? (
                   <Link
                     key={link.href}
                     to={link.href}
                     onClick={closeDrawer}
-                    className="py-3 font-medium border-b border-[var(--line)]"
+                    className="min-h-12 break-words py-3 font-medium text-[var(--ink)] border-b border-[var(--line)]"
                   >
                     {link.label}
                   </Link>
                 ) : (
                   <a
                     key={link.href}
-                    href={sectionHref(link.href)}
+                    href={normalizeHref(link.href)}
                     onClick={closeDrawer}
-                    className="py-3 font-medium border-b border-[var(--line)]"
+                    className="min-h-12 break-words py-3 font-medium text-[var(--ink)] border-b border-[var(--line)]"
                   >
                     {link.label}
                   </a>
                 )
               )}
               <div className="mt-5 space-y-3">
-                {student ? <UserMenu fullWidth onNavigate={closeDrawer} /> : <LoginDropdown fullWidth onNavigate={closeDrawer} />}
-                <a href={sectionHref("#admission")} onClick={closeDrawer} className="btn btn-primary w-full">
-                  Apply for Admission
+                {student ? <UserMenu fullWidth onNavigate={closeDrawer} /> : <LoginDropdown fullWidth onNavigate={closeDrawer} label={navbar.studentLoginLabel || "Login"} />}
+                <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} onClick={closeDrawer} className="btn btn-primary w-full">
+                  {navbar.admissionCtaLabel || "Apply for Admission"}
                 </a>
-                <a href={`tel:+91${SITE.phones[0]}`} onClick={closeDrawer} className="btn btn-navy w-full">
-                  Call Now
-                </a>
+                {phone && <a href={`tel:+91${phone}`} onClick={closeDrawer} className="btn btn-navy w-full">
+                  {navbar.callCtaLabel || "Call Now"}
+                </a>}
               </div>
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
     </header>
   );
 };

@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
 import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
-import { fetchFaculty } from "@/services/api/faculty.service";
 import { resolveImageUrl } from "@/services/api/axiosInstance";
+import { useWebsite } from "@/context/WebsiteContext";
 import type { FacultyMember } from "@/types";
 
 import directorFallback from "@/assets/images/director.jpg";
@@ -26,26 +25,15 @@ const FALLBACK: FacultyMember[] = [
 ];
 
 const Faculty = () => {
-  const [faculty, setFaculty] = useState<FacultyMember[]>(FALLBACK);
-
-  useEffect(() => {
-    let mounted = true;
-    fetchFaculty()
-      .then((data) => {
-        if (mounted && data.length) setFaculty(data);
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { faculty: cmsFaculty, cmsAvailable } = useWebsite();
+  const faculty = (cmsAvailable ? cmsFaculty : FALLBACK) as FacultyMember[];
 
   return (
     <section id="faculty" className="py-16 lg:py-24">
       <div className="container-x">
-        <SectionHeading eyebrow="Meet The Team" title="Guided by people who care" />
+        <SectionHeading eyebrow="Meet The Team" title="Guided by people who care" sectionKey="faculty" />
 
-        <div className="grid sm:grid-cols-2 gap-8 mt-14 max-w-3xl mx-auto">
+        {faculty.length ? <div className="grid sm:grid-cols-2 gap-8 mt-14 max-w-3xl mx-auto">
           {faculty.map((member, i) => {
             const imgSrc = member.image?.startsWith("/uploads")
               ? resolveImageUrl(member.image)
@@ -66,6 +54,9 @@ const Faculty = () => {
                     <h3 className="font-display font-semibold text-lg">{member.name}</h3>
                     <p className="text-[var(--royal)] text-[13.5px] font-medium mt-0.5">{member.designation}</p>
                     <p className="text-[12.5px] text-[var(--ink-soft)] mt-1">{member.qualification}</p>
+                    {member.subject && <p className="text-sm text-[var(--ink-soft)] mt-1">Subject: {member.subject}</p>}
+                    {member.experience && <p className="text-sm text-[var(--ink-soft)] mt-1">Experience: {member.experience}</p>}
+                    {member.specialization && <p className="text-sm text-[var(--ink-soft)] mt-2">{member.specialization}</p>}
                     {member.bio && (
                       <p className="text-[13.5px] text-[var(--ink-soft)] mt-3 leading-relaxed">{member.bio}</p>
                     )}
@@ -74,7 +65,7 @@ const Faculty = () => {
               </Reveal>
             );
           })}
-        </div>
+        </div> : <div className="mt-12 rounded-xl bg-[var(--bg-soft)] px-6 py-10 text-center text-[var(--ink-soft)]">Faculty profiles will be updated soon.</div>}
       </div>
     </section>
   );

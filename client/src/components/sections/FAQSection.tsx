@@ -4,19 +4,23 @@ import Reveal from "@/components/common/Reveal";
 import { FAQS } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
 import { cn } from "@/utils/cn";
+import { useWebsite } from "@/context/WebsiteContext";
 
 const PlusIcon = getIcon("plus");
 
 const FAQSection = () => {
+  const { settings } = useWebsite();
+  const content = settings.homepage?.sections?.faqs || {};
+  const faqs = Array.isArray(content.items) ? content.items : FAQS;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <section className="py-16 lg:py-24">
       <div className="container-x max-w-3xl">
-        <SectionHeading eyebrow="FAQ" title="Common questions" />
+        <SectionHeading eyebrow={content.eyebrow || "FAQ"} title={content.title || "Common questions"} sectionKey="faqs" />
 
         <Reveal className="mt-12">
-          {FAQS.map((faq, i) => {
+          {faqs.length ? faqs.map((faq: any, i: number) => {
             const isOpen = openIndex === i;
             return (
               <div key={faq.question} className="border-b border-[var(--line)]">
@@ -38,7 +42,7 @@ const FAQSection = () => {
                 </div>
               </div>
             );
-          })}
+          }) : <p className="rounded-xl bg-[var(--bg-soft)] p-5 text-sm text-[var(--ink-soft)]">There are no questions listed right now. Contact the institute and we will be happy to help.</p>}
         </Reveal>
       </div>
     </section>

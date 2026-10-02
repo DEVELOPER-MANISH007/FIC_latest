@@ -11,6 +11,8 @@ import studentAuthRoutes from "./studentAuth.routes.js";
 import categoryRoutes from "./category.routes.js";
 import examRoutes from "./exam.routes.js";
 import attemptRoutes from "./attempt.routes.js";
+import testRoutes from "./test.routes.js";
+import resultRoutes from "./result.routes.js";
 
 // Admin Panel
 import adminAuthRoutes from "./adminAuth.routes.js";
@@ -29,6 +31,8 @@ import adminStudyCourseRoutes from "./adminStudyCourse.routes.js";
 import studyMaterialRoutes from "./studyMaterial.routes.js";
 import adminStudyMaterialRoutes from "./adminStudyMaterial.routes.js";
 import publicMaterialRoutes from "./publicMaterial.routes.js";
+import websiteRoutes from "./website.routes.js";
+import adminWebsiteRoutes from "./adminWebsite.routes.js";
 
 const router = Router();
 
@@ -38,6 +42,7 @@ router.use("/courses", courseRoutes);
 router.use("/faculty", facultyRoutes);
 router.use("/gallery", galleryRoutes);
 router.use("/institute", instituteRoutes);
+router.use("/website", websiteRoutes);
 
 // Public category list (students see category names on exam screens)
 router.use("/categories", categoryRoutes);
@@ -53,6 +58,8 @@ router.use("/public/materials", publicMaterialRoutes);
 router.use("/student/auth", studentAuthRoutes);
 router.use("/exams", examRoutes);
 router.use("/attempts", attemptRoutes);
+router.use("/tests", testRoutes);
+router.use("/results", resultRoutes);
 router.use("/materials", studyMaterialRoutes);
 
 // Admin Panel
@@ -67,9 +74,6 @@ router.use("/admin/admissions", adminAdmissionRoutes);
 router.use("/admin/enquiries", adminEnquiryRoutes);
 router.use("/admin/study-courses", adminStudyCourseRoutes);
 router.use("/admin/materials", adminStudyMaterialRoutes);
-
-router.get("/health", (req, res) => {
-  res.status(200).json({ success: true, message: "API is healthy", timestamp: new Date().toISOString() });
-});
+router.use("/admin/website", adminWebsiteRoutes);
 
 export default router;

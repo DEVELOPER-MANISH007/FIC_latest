@@ -14,7 +14,7 @@ export const api = axios.create({
 // Attaches the correct bearer token depending on whether the request
 // targets an admin-only endpoint or a student/public endpoint.
 api.interceptors.request.use((config) => {
-  const isAdminRoute = config.url?.startsWith("/admin");
+  const isAdminRoute = config.url?.startsWith("/admin") || /^\/(?:tests|results)\/admin(?:\/|$)/.test(config.url || "");
   const token = isAdminRoute ? localStorage.getItem(ADMIN_TOKEN_KEY) : localStorage.getItem(STUDENT_TOKEN_KEY);
   if (token) {
     config.headers = config.headers || {};
@@ -33,7 +33,7 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error?.response?.status === 401) {
-      const isAdminRoute = error.config?.url?.startsWith("/admin");
+      const isAdminRoute = error.config?.url?.startsWith("/admin") || /^\/(?:tests|results)\/admin(?:\/|$)/.test(error.config?.url || "");
       localStorage.removeItem(isAdminRoute ? ADMIN_TOKEN_KEY : STUDENT_TOKEN_KEY);
     }
     return Promise.reject(error);

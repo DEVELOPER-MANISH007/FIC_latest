@@ -1,6 +1,7 @@
 import { Readable } from "stream";
 import cloudinary, { isCloudinaryConfigured } from "../config/cloudinary.js";
 import isServerless from "./isServerless.js";
+import ApiError from "./ApiError.js";
 
 const uploadBufferToCloudinary = (buffer, folder) =>
   new Promise((resolve, reject) => {
@@ -31,11 +32,10 @@ export async function persistUploadedImage(file, subfolder = "") {
   }
 
   if (isServerless()) {
-    throw new Error(
-      "Image uploads on Vercel require CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET"
-    );
+    throw new ApiError(503, "Image uploads are temporarily unavailable. Configure the institute media storage to enable uploads.");
   }
 
-  const prefix = subfolder ? `/uploads/${subfolder}/` : "/uploads/";
-  return `${prefix}${file.filename}`;
+  // Disk storage writes uploaded files directly under server/uploads. Keep the
+  // public URL aligned with that storage path; the folder is metadata only.
+  return `/uploads/${file.filename}`;
 }

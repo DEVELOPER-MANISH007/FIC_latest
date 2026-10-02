@@ -11,7 +11,7 @@ import { buildExcelBuffer } from "../utils/excelUtil.js";
  */
 export const getMyResults = asyncHandler(async (req, res) => {
   const results = await Result.find({ student: req.student._id })
-    .populate("test", "testName passingMarks")
+    .populate("exam", "name passingPercentage durationMinutes")
     .sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, results));
 });
@@ -23,7 +23,7 @@ export const getMyResults = asyncHandler(async (req, res) => {
  */
 export const getResultById = asyncHandler(async (req, res) => {
   const result = await Result.findById(req.params.id)
-    .populate("test", "testName passingMarks duration")
+    .populate("exam", "name passingPercentage durationMinutes")
     .populate("student", "name email");
   if (!result) throw new ApiError(404, "Result not found");
 
@@ -40,10 +40,10 @@ export const getResultById = asyncHandler(async (req, res) => {
  * @access Private (admin)
  */
 export const getAllResults = asyncHandler(async (req, res) => {
-  const { student, test, page = 1, limit = 20 } = req.query;
+  const { student, test, exam, page = 1, limit = 20 } = req.query;
   const filter = {};
   if (student) filter.student = student;
-  if (test) filter.test = test;
+  if (exam || test) filter.exam = exam || test;
 
   const pageNum = Math.max(parseInt(page) || 1, 1);
   const limitNum = Math.min(parseInt(limit) || 20, 200);
@@ -51,7 +51,7 @@ export const getAllResults = asyncHandler(async (req, res) => {
   const [items, total] = await Promise.all([
     Result.find(filter)
       .populate("student", "name email phone")
-      .populate("test", "testName passingMarks")
+      .populate("exam", "name passingPercentage")
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum),
@@ -68,14 +68,14 @@ export const getAllResults = asyncHandler(async (req, res) => {
  * @access Private (admin)
  */
 export const exportResults = asyncHandler(async (req, res) => {
-  const { student, test } = req.query;
+  const { student, test, exam } = req.query;
   const filter = {};
   if (student) filter.student = student;
-  if (test) filter.test = test;
+  if (exam || test) filter.exam = exam || test;
 
   const results = await Result.find(filter)
     .populate("student", "name email phone")
-    .populate("test", "testName passingMarks")
+    .populate("exam", "name passingPercentage")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -83,15 +83,15 @@ export const exportResults = asyncHandler(async (req, res) => {
     Student: r.student?.name || "",
     Email: r.student?.email || "",
     Phone: r.student?.phone || "",
-    Test: r.test?.testName || "",
+    Exam: r.exam?.name || "",
     "Total Questions": r.totalQuestions,
     Correct: r.correct,
     Wrong: r.wrong,
     Skipped: r.skipped,
-    "Marks Obtained": r.marksObtained,
+    "Marks Obtained": r.obtainedMarks,
     "Total Marks": r.totalMarks,
     Percentage: r.percentage,
-    Result: r.result,
+    Result: r.isPassed ? "Passed" : "Failed",
     "Time Taken (sec)": r.timeTakenSeconds,
     Date: new Date(r.createdAt).toLocaleString("en-IN"),
   }));

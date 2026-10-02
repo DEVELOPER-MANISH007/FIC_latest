@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import isServerless from "../utils/isServerless.js";
+import ApiError from "../utils/ApiError.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,10 +24,11 @@ const ensureUploadDir = () => {
 };
 
 const fileFilter = (req, file, cb) => {
-  const allowed = /jpeg|jpg|png|webp|gif/;
-  const isValid = allowed.test(path.extname(file.originalname).toLowerCase());
+  const allowedExtensions = /\.(jpeg|jpg|png|webp|gif)$/i;
+  const allowedMimeTypes = /^image\/(jpeg|png|webp|gif)$/i;
+  const isValid = allowedExtensions.test(path.extname(file.originalname).toLowerCase()) && allowedMimeTypes.test(file.mimetype);
   if (isValid) return cb(null, true);
-  cb(new Error("Only image files (jpg, jpeg, png, webp, gif) are allowed"));
+  cb(new ApiError(400, "Choose a JPG, PNG, WebP or GIF image"));
 };
 
 const storage = isServerless()

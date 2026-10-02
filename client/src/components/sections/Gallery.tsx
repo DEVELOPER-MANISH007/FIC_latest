@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
 import Lightbox from "@/components/common/Lightbox";
-import { fetchGallery } from "@/services/api/gallery.service";
 import { resolveImageUrl } from "@/services/api/axiosInstance";
 import type { GalleryItem } from "@/types";
+import { useWebsite } from "@/context/WebsiteContext";
 
 import lab from "@/assets/images/lab.jpg";
 import classroom from "@/assets/images/classroom.jpg";
@@ -21,21 +21,10 @@ const FALLBACK: GalleryItem[] = [
 ];
 
 const Gallery = () => {
-  const [items, setItems] = useState<GalleryItem[]>(FALLBACK);
+  const { gallery: cmsGallery, cmsAvailable } = useWebsite();
+  const items = (cmsAvailable ? cmsGallery : FALLBACK) as GalleryItem[];
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState("");
-
-  useEffect(() => {
-    let mounted = true;
-    fetchGallery()
-      .then((data) => {
-        if (mounted && data.length) setItems(data);
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const openLightbox = (src: string, alt: string) => {
     setLightboxSrc(src);
@@ -45,39 +34,27 @@ const Gallery = () => {
   return (
     <section id="gallery" className="py-16 lg:py-24 bg-[var(--bg-soft)]">
       <div className="container-x">
-        <SectionHeading eyebrow="Gallery" title="A glimpse inside the campus" />
+        <SectionHeading eyebrow="Gallery" title="A glimpse inside the campus" sectionKey="gallery" />
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
+        {items.length ? <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
           {items.map((item, i) => {
             const imgSrc = item.image?.startsWith("/uploads") ? resolveImageUrl(item.image) : item.image;
             return (
               <Reveal key={`${item.category}-${i}`} delay={(i % 6) * 0.06}>
                 <div
                   className="gal-item aspect-square"
-                  onClick={() => openLightbox(imgSrc, `${item.category} at Future IT College`)}
+                  onClick={() => openLightbox(imgSrc, item.title || `${item.category} at Future IT College`)}
                 >
-                  <img src={imgSrc} alt={`${item.category} at Future IT College`} loading="lazy" />
+                  <img src={imgSrc} alt={item.caption || item.title || `${item.category} at Future IT College`} loading="lazy" />
                   <div className="gal-overlay">
-                    <span className="text-white text-[12.5px] font-medium">{item.category}</span>
+                    <span className="text-center text-white text-[12.5px] font-medium">{item.caption || item.eventName || item.title || item.category}{item.eventDate ? ` · ${new Date(item.eventDate).toLocaleDateString()}` : ""}{item.isFeatured ? " · Featured" : ""}</span>
                   </div>
                 </div>
               </Reveal>
             );
           })}
 
-          <Reveal delay={0.3}>
-            <div className="gal-item aspect-square ph">
-              <img
-                src="https://placehold.co/500x500/EEF1FB/2547E0?text=Events+Photo+Coming+Soon"
-                alt="Institute events — photo coming soon"
-                loading="lazy"
-              />
-              <div className="gal-overlay">
-                <span className="text-white text-[12.5px] font-medium">Events</span>
-              </div>
-            </div>
-          </Reveal>
-        </div>
+        </div> : <div className="mt-12 rounded-xl bg-white px-6 py-10 text-center text-[var(--ink-soft)]">Campus photos will be added soon.</div>}
       </div>
 
       <Lightbox src={lightboxSrc} alt={lightboxAlt} onClose={() => setLightboxSrc(null)} />

@@ -8,12 +8,21 @@ import { SITE, COURSE_OPTIONS } from "@/constants/siteData";
 import { submitAdmission } from "@/services/api/admission.service";
 import type { AdmissionFormData, SubmitStatus } from "@/types";
 import AdmissionProcess from "./AdmissionProcess";
+import { useWebsite } from "@/context/WebsiteContext";
 
 const PhoneIcon = getIcon("phone");
 const MailIcon = getIcon("mail");
 const WhatsappIcon = getIcon("whatsapp");
 
 const AdmissionForm = () => {
+  const { settings, courses, cmsAvailable } = useWebsite();
+  const content = settings.homepage?.sections?.admission || {};
+  const contact = settings.contact || {};
+  const phones = cmsAvailable
+    ? (Array.isArray(contact.phones) ? contact.phones : [])
+    : (contact.phones?.length ? contact.phones : SITE.phones);
+  const email = contact.email || (cmsAvailable ? "" : SITE.email);
+  const courseOptions = cmsAvailable ? courses.map((course) => course.title) : COURSE_OPTIONS;
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [serverMessage, setServerMessage] = useState("");
 
@@ -49,40 +58,39 @@ const AdmissionForm = () => {
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-0 mt-20 card rounded-[var(--radius-lg)] overflow-hidden">
           <Reveal className="grad-navy p-10 lg:p-12 text-white flex flex-col justify-between">
             <div>
-              <SectionEyebrow variant="dark">Admission Enquiry</SectionEyebrow>
-              <h3 className="font-display font-bold text-2xl lg:text-3xl mt-5">Let's get you started</h3>
+              <SectionEyebrow variant="dark">{content.eyebrow || "Admission Enquiry"}</SectionEyebrow>
+              <h3 className="font-display font-bold text-2xl lg:text-3xl mt-5">{content.title || "Let's get you started"}</h3>
               <p className="text-[#C6CEEF] mt-4 leading-relaxed">
-                Share a few details and our team will reach out to guide you through course selection and demo
-                classes.
+                {content.description || "Share a few details and our team will reach out to guide you through course selection and demo classes."}
               </p>
             </div>
             <div className="mt-10 space-y-4">
-              <a
-                href={`tel:+91${SITE.phones[0]}`}
+              {phones.length > 0 && <a
+                href={`tel:+91${phones[0]}`}
                 className="flex items-center gap-3 text-white hover:text-[var(--orange-soft)] transition"
               >
                 <PhoneIcon size={18} />
-                <span className="text-[14.5px]">{SITE.phones.join(" / ")}</span>
-              </a>
-              <a
-                href={`mailto:${SITE.email}`}
+                <span className="text-[14.5px]">{phones.join(" / ")}</span>
+              </a>}
+              {email && <a
+                href={`mailto:${email}`}
                 className="flex items-center gap-3 text-white hover:text-[var(--orange-soft)] transition"
               >
                 <MailIcon size={18} />
-                <span className="text-[14.5px]">{SITE.email}</span>
-              </a>
+                <span className="text-[14.5px]">{email}</span>
+              </a>}
               <div className="flex gap-3 pt-2">
-                <a href={`tel:+91${SITE.phones[0]}`} className="btn btn-outline btn-sm">
+                {phones[0] && <a href={`tel:+91${phones[0]}`} className="btn btn-outline btn-sm">
                   Call Now
-                </a>
-                <a
-                  href={`https://wa.me/91${SITE.phones[0]}`}
+                </a>}
+                {(contact.whatsapp || phones[0]) && <a
+                  href={`https://wa.me/91${contact.whatsapp || phones[0]}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary btn-sm"
                 >
                   <WhatsappIcon size={15} /> WhatsApp
-                </a>
+                </a>}
               </div>
             </div>
           </Reveal>
@@ -163,7 +171,7 @@ const AdmissionForm = () => {
                   <option value="" disabled>
                     Select a course
                   </option>
-                  {COURSE_OPTIONS.map((course) => (
+                  {courseOptions.map((course) => (
                     <option key={course} value={course}>
                       {course}
                     </option>

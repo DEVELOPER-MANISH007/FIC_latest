@@ -7,6 +7,7 @@ const CourseSchema = new mongoose.Schema(
       required: [true, "Course title is required"],
       trim: true,
     },
+    shortTitle: { type: String, trim: true, default: "", maxlength: 80 },
     description: {
       type: String,
       required: [true, "Course description is required"],
@@ -22,6 +23,14 @@ const CourseSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    eligibility: { type: String, trim: true, default: "", maxlength: 240 },
+    feeDisplay: { type: String, trim: true, default: "", maxlength: 120 },
+    image: { type: String, trim: true, default: "" },
+    features: { type: [String], default: [] },
+    subjects: { type: [String], default: [] },
+    batches: { type: [String], default: [] },
+    ctaLabel: { type: String, trim: true, default: "Enquire now", maxlength: 80 },
+    ctaHref: { type: String, trim: true, default: "#admission" },
     category: {
       type: String,
       enum: ["general", "programming", "office", "industry"],

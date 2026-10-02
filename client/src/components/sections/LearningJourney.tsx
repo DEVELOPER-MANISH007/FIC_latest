@@ -1,15 +1,20 @@
 import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
 import { LEARNING_JOURNEY } from "@/constants/siteData";
+import { useWebsite } from "@/context/WebsiteContext";
 
 const LearningJourney = () => {
-  const firstRow = LEARNING_JOURNEY.slice(0, 4);
-  const secondRow = LEARNING_JOURNEY.slice(4);
+  const { settings } = useWebsite();
+  const configured = settings.homepage?.sections?.learningJourney?.items;
+  const steps = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false).map((entry: any, index: number) => ({ ...entry, step: entry.step || index + 1 })) : LEARNING_JOURNEY;
+  const firstRow = steps.slice(0, 4);
+  const secondRow = steps.slice(4);
 
   return (
     <section className="py-16 lg:py-24 bg-[var(--bg-soft)]">
       <div className="container-x">
         <SectionHeading
+          sectionKey="learningJourney"
           eyebrow="Learning Journey"
           title="Your path, step by step"
           subtitle="A clear, guided sequence from your first visit to career support."
@@ -18,9 +23,9 @@ const LearningJourney = () => {
         <div className="mt-16 relative">
           <div className="roadmap-line lg:hidden" />
           <div className="hidden lg:block roadmap-line-h" />
-          {[firstRow, secondRow].map((row, rowIdx) => (
+          {steps.length ? [firstRow, secondRow].map((row, rowIdx) => (
             <div key={rowIdx} className={`grid lg:grid-cols-4 gap-x-6 gap-y-10 ${rowIdx === 1 ? "mt-10" : ""}`}>
-              {row.map((item) => (
+              {row.map((item: any) => (
                 <Reveal key={item.step} delay={(item.step % 4) * 0.08}>
                   <div className="flex lg:flex-col items-start lg:items-center gap-5 lg:text-center">
                     <div className="rm-dot active">{item.step}</div>
@@ -32,7 +37,7 @@ const LearningJourney = () => {
                 </Reveal>
               ))}
             </div>
-          ))}
+          )) : <p className="card p-6 text-center text-[var(--ink-soft)]">Our learning journey information is being updated.</p>}
         </div>
       </div>
     </section>

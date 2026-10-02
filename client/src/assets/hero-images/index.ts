@@ -1,11 +1,11 @@
-import slide1 from "./slide-1-building.jpg";
-import slide2 from "./slide-2-classroom.jpg";
-import slide3 from "./slide-3-lab.jpg";
-import slide4 from "./slide-4-practical.jpg";
-
 /**
- * Hero background slider images, in display order.
- * To add more slides later: drop the image file into this folder,
- * import it above, and add it to this array.
+ * Hero images are also used by the Website CMS migration. Keep them in
+ * public/website so both the legacy fallback and seeded CMS banners use
+ * the same stable, deployable URLs.
  */
-export const HERO_IMAGES: string[] = [slide1, slide2, slide3, slide4];
+export const HERO_IMAGES: string[] = [
+  "/website/slide-1-building.jpg",
+  "/website/slide-2-classroom.jpg",
+  "/website/slide-3-lab.jpg",
+  "/website/slide-4-practical.jpg",
+];

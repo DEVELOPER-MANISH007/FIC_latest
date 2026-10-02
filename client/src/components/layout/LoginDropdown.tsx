@@ -14,9 +14,10 @@ interface LoginDropdownProps {
   scrolled?: boolean;
   fullWidth?: boolean;
   onNavigate?: () => void;
+  label?: string;
 }
 
-const LoginDropdown = ({ scrolled = false, fullWidth = false, onNavigate }: LoginDropdownProps) => {
+const LoginDropdown = ({ scrolled = false, fullWidth = false, onNavigate, label = "Login" }: LoginDropdownProps) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +51,7 @@ const LoginDropdown = ({ scrolled = false, fullWidth = false, onNavigate }: Logi
           !fullWidth && scrolled && "!text-[var(--ink)] !border-[var(--ink)]/30 !bg-transparent"
         )}
       >
-        Login
+        {label}
         <FiChevronDown
           className={cn("w-4 h-4 shrink-0 transition-transform duration-200", open && "rotate-180")}
           aria-hidden

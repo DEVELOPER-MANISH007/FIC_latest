@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { getIcon } from "@/constants/iconMap";
@@ -17,9 +17,12 @@ const CheckFileIcon = getIcon("checkFile");
 const MailIcon = getIcon("mail");
 const FolderIcon = getIcon("folder");
 const ShieldIcon = getIcon("shield");
+const GlobeIcon = getIcon("globe");
+const CloseIcon = getIcon("close");
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: GridIcon },
+  { to: "/admin/website", label: "Website Management", icon: GlobeIcon },
   { to: "/admin/admissions", label: "Admission Forms", icon: CheckFileIcon },
   { to: "/admin/enquiries", label: "Enquiry Forms", icon: MailIcon },
   { to: "/admin/questions", label: "Question Bank", icon: FileTextIcon },
@@ -34,7 +37,22 @@ const NAV_ITEMS = [
 
 const AdminLayout = ({ children, title }: { children: ReactNode; title: string }) => {
   const { admin, logout } = useAdminAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
 
   const handleLogout = () => {
     logout();
@@ -43,13 +61,15 @@ const AdminLayout = ({ children, title }: { children: ReactNode; title: string }
 
   return (
     <div className="min-h-screen bg-[var(--bg-soft)] flex">
-      <aside className="hidden lg:flex flex-col w-64 grad-navy shrink-0 py-8 px-5">
+      {menuOpen && <button className="fixed inset-0 z-[70] bg-black/50 lg:hidden" aria-label="Close admin navigation" onClick={() => setMenuOpen(false)} />}
+      <aside aria-label="Admin navigation" className={cn("fixed inset-y-0 left-0 z-[71] flex h-dvh w-72 max-w-[85vw] flex-col overflow-y-auto overscroll-contain grad-navy shrink-0 py-[calc(1.5rem+env(safe-area-inset-top))] px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] transition-transform lg:static lg:z-auto lg:h-auto lg:w-64 lg:max-w-none lg:translate-x-0", menuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
         <div className="flex items-center gap-3 px-2 mb-10">
           <img src={logo} alt="Future IT College logo" className="w-10 h-10 rounded-xl object-cover bg-white" />
           <div>
             <p className="font-display font-bold text-white text-[14px]">Admin Panel</p>
             <p className="text-[10.5px] text-[#9AA4D4]">Future IT College</p>
           </div>
+          <button className="ml-auto text-white lg:hidden" aria-label="Close admin navigation" onClick={() => setMenuOpen(false)}><CloseIcon size={20} /></button>
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
@@ -57,6 +77,7 @@ const AdminLayout = ({ children, title }: { children: ReactNode; title: string }
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-[13.5px] font-medium transition",
@@ -82,7 +103,7 @@ const AdminLayout = ({ children, title }: { children: ReactNode; title: string }
       <div className="flex-1 min-w-0">
         <header className="bg-white border-b border-[var(--line)] px-6 py-5 flex items-center justify-between lg:hidden">
           <p className="font-display font-bold">{title}</p>
-          <MenuIcon size={22} />
+          <button type="button" aria-label="Open admin navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} className="rounded-lg border border-[var(--line)] p-2 text-[var(--navy)]"><MenuIcon size={20} /></button>
         </header>
         <main className="p-6 lg:p-10">
           <h1 className="font-display font-bold text-2xl mb-8 hidden lg:block">{title}</h1>

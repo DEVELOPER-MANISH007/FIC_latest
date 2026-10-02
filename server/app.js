@@ -2,6 +2,7 @@
 import "./config/loadEnv.js";
 
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -19,11 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET must be set in production");
-  }
-  process.env.JWT_SECRET = "fic_9f2c1d7e84ab4c6a9e51d3f0b7a8c2e6d4f19b3a7c5e8d20461f7b9a3c5d8e01";
-  console.warn("JWT_SECRET not set - using development fallback secret.");
+  throw new Error("JWT_SECRET environment variable is required");
 }
 
 const parseCorsOrigins = () => {
@@ -137,6 +134,10 @@ const createApp = () => {
     });
   });
 
+  // Keep health checks available even while MongoDB is reconnecting or unconfigured.
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ success: true, message: "API process is healthy", timestamp: new Date().toISOString(), database: mongoose.connection.readyState === 1 ? "connected" : "unavailable" });
+  });
   app.use("/api", ensureDb, apiRoutes);
 
   app.use(notFound);
@@ -150,8 +151,7 @@ const app = createApp();
 /** Eager DB connect for long-running local/traditional servers only. */
 if (!isServerless()) {
   connectDB().catch((error) => {
-    console.error("Initial MongoDB connection failed:", error.message);
-    process.exit(1);
+    console.error("Initial MongoDB connection failed; API is running in limited mode until the database is available:", error.message);
   });
 }
 

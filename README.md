@@ -146,9 +146,10 @@ npm run migrate:study-material  # One-time: backfill subject/unit on any pre-exi
 npm run dev                 # http://localhost:5000
 ```
 
-Default admin login after `seed:exam`:
-- **Email:** `admin@futureitcollege.com`
-- **Password:** `Admin@123`
+The exam seeder requires `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` to be
+set in your local environment. It does not create an account with default
+credentials. For existing installations, use `npm run seed:admin` with those
+variables to create a dedicated admin account if one is needed.
 
 > **Upgrading an existing deployment?** Study Material records now use a
 > `subject` / `unit` structure instead of the earlier Course selection. Run
