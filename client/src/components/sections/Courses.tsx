@@ -7,6 +7,14 @@ import { useWebsite } from "@/context/WebsiteContext";
 import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 const ArrowRightIcon = getIcon("arrowRight");
+const COURSE_CATEGORY_LABELS: Record<string, string> = {
+  general: "Computer & Office",
+  office: "Computer & Office",
+  programming: "Programming & Coding",
+  professional: "Professional IT",
+  industry: "Industry-Level / Engineering",
+  design: "Design & Multimedia",
+};
 
 const Courses = () => {
   const { settings, courses: cmsCourses, cmsAvailable } = useWebsite();
@@ -38,7 +46,7 @@ const Courses = () => {
                     </div>
                   {c.badge && <span className="badge-new">{c.badge}</span>}
                   </div>
-                  <div className="flex items-center justify-between gap-2 mt-5"><h3 className="font-display font-semibold text-lg">{c.shortTitle || c.title}</h3><span className="text-[10px] uppercase tracking-wide text-[var(--ink-soft)]">{c.category}</span></div>
+                  <div className="flex items-center justify-between gap-2 mt-5"><h3 className="font-display font-semibold text-lg">{c.shortTitle || c.title}</h3>{c.category && <span className="text-[10px] tracking-wide text-[var(--ink-soft)]">{COURSE_CATEGORY_LABELS[c.category] || c.category}</span>}</div>
                   <p className="text-[13.5px] text-[var(--ink-soft)] mt-2 leading-relaxed">{c.description}</p>
                   {(c.duration || c.eligibility || c.feeDisplay) && <dl className="grid grid-cols-2 gap-2 mt-4 text-xs text-[var(--ink-soft)]">{c.duration && <div><dt className="font-semibold text-[var(--ink)]">Duration</dt><dd>{c.duration}</dd></div>}{c.eligibility && <div><dt className="font-semibold text-[var(--ink)]">Eligibility</dt><dd>{c.eligibility}</dd></div>}{c.feeDisplay && <div className="col-span-2"><dt className="font-semibold text-[var(--ink)]">Fees</dt><dd>{c.feeDisplay}</dd></div>}</dl>}
                   {c.features?.length ? <ul className="mt-4 list-disc pl-5 text-xs text-[var(--ink-soft)] space-y-1">{c.features.slice(0, 3).map((feature) => <li key={feature}>{feature}</li>)}</ul> : null}

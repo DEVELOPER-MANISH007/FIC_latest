@@ -10,12 +10,14 @@ const CourseSchema = new mongoose.Schema(
     shortTitle: { type: String, trim: true, default: "", maxlength: 80 },
     description: {
       type: String,
-      required: [true, "Course description is required"],
+      default: function () {
+        return this.title ? `Practical training in ${this.title}.` : "";
+      },
       trim: true,
     },
     icon: {
       type: String,
-      required: [true, "Icon key is required"],
+      default: "monitor",
       trim: true,
     },
     duration: {
@@ -33,8 +35,10 @@ const CourseSchema = new mongoose.Schema(
     ctaHref: { type: String, trim: true, default: "#admission" },
     category: {
       type: String,
-      enum: ["general", "programming", "office", "industry"],
-      default: "general",
+      // `general` remains supported for existing records; new CMS courses use
+      // the five catalog categories below.
+      enum: ["general", "office", "programming", "professional", "industry", "design"],
+      default: "office",
     },
     featured: {
       type: Boolean,

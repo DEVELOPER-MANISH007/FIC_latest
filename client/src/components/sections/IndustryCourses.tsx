@@ -12,7 +12,7 @@ const IndustryCourses = () => {
   const content = settings.homepage?.sections?.industryCourses || {};
   const text = (value: string | undefined, fallback: string) => cmsAvailable ? value ?? "" : value || fallback;
   const courses = (cmsAvailable ? websiteCourses : COURSES_FALLBACK) as Course[];
-  const items = courses.filter((course) => course.category === "industry").slice(0, 4);
+  const items = courses.filter((course) => course.category === "industry");
   const fallback = COURSES_FALLBACK.filter((course) => course.category === "industry").slice(0, 2);
   const cards = cmsAvailable ? items : fallback;
   const highlights = Array.isArray(content.highlights) ? content.highlights : cmsAvailable ? [] : ["Hands-on software practice", "Instructor-led learning", "Project-based training", "Career guidance"];

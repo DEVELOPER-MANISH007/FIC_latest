@@ -67,11 +67,11 @@ const AdminWebsite = () => {
     catch (error: any) { toast.error(error.response?.data?.message || "Could not save website content"); }
     finally { setSaving(false); }
   };
-  const startNew = () => setEditing({ order: items.length + 1, isActive: true, ...(resource === "notices" ? { publishAt: new Date().toISOString().slice(0, 10), category: "General" } : {}), ...(resource === "courses" ? { icon: "monitor", category: "general" } : {}), ...(resource === "gallery" ? { category: "Campus" } : {}), ...(resource === "testimonials" ? { rating: 5 } : {}) });
+  const startNew = () => setEditing({ order: items.length + 1, isActive: true, ...(resource === "notices" ? { publishAt: new Date().toISOString().slice(0, 10), category: "General" } : {}), ...(resource === "courses" ? { icon: "monitor", category: "office" } : {}), ...(resource === "gallery" ? { category: "Campus" } : {}), ...(resource === "testimonials" ? { rating: 5 } : {}) });
   const saveItem = async () => {
     if (!resource || !editing) return;
     const required: Record<Resource, string[]> = {
-      banners: ["title", "image"], notices: ["title"], courses: ["title", "description", "icon"],
+      banners: ["title", "image"], notices: ["title"], courses: ["title"],
       faculty: ["name", "designation", "qualification", "image"], gallery: ["title", "category", "image"],
       testimonials: ["name", "quote"],
     };
@@ -80,6 +80,11 @@ const AdminWebsite = () => {
     setSaving(true);
     try {
       const payload = { ...editing };
+      if (resource === "courses") {
+        payload.description = String(payload.description || "").trim() || `Practical training in ${String(payload.title).trim()}.`;
+        payload.icon = String(payload.icon || "").trim() || "monitor";
+        payload.category = payload.category || "office";
+      }
       if (resource === "notices") { if (payload.publishAt) payload.publishAt = new Date(payload.publishAt).toISOString(); if (payload.expiresAt) payload.expiresAt = new Date(payload.expiresAt).toISOString(); else payload.expiresAt = null; }
       if (resource === "gallery") { if (payload.eventDate) payload.eventDate = new Date(payload.eventDate).toISOString(); else payload.eventDate = null; }
       if (resource === "banners") { for (const key of ["startAt", "endAt"]) { if (payload[key]) payload[key] = new Date(payload[key]).toISOString(); else payload[key] = null; } }
@@ -145,8 +150,20 @@ const AdminWebsite = () => {
   const fieldControl = (field: { key: string; label: string; type?: string }) => {
     const value = editing?.[field.key] ?? (field.type === "boolean" ? false : field.type === "number" ? 0 : field.type === "list" ? [] : "");
     const set = (next: any) => setEditing((current) => ({ ...current, [field.key]: next }));
-    const choices: Record<string, string[]> = { courseCategory: ["general", "programming", "office", "industry"], noticeCategory: ["Admission", "Exam", "Result", "Holiday", "Course", "General", "Important"], priority: ["normal", "important", "urgent"], galleryCategory: ["Campus", "Classroom", "Lab", "Events", "Workshops", "Seminars", "Students", "Achievements", "Computer Lab", "Smart Classroom", "Practical Sessions", "Institute Building", "Students Learning", "Other"] };
-    if (field.type && choices[field.type]) return <select className="input mt-2" value={value || choices[field.type][0]} onChange={(e) => set(e.target.value)}>{choices[field.type].map((choice) => <option key={choice} value={choice}>{choice}</option>)}</select>;
+    const choices: Record<string, { value: string; label: string }[]> = {
+      courseCategory: [
+        ...(editing?.category === "general" ? [{ value: "general", label: "General (legacy course)" }] : []),
+        { value: "office", label: "Computer & Office" },
+        { value: "programming", label: "Programming & Coding" },
+        { value: "professional", label: "Professional IT" },
+        { value: "industry", label: "Industry-Level / Engineering" },
+        { value: "design", label: "Design & Multimedia" },
+      ],
+      noticeCategory: ["Admission", "Exam", "Result", "Holiday", "Course", "General", "Important"].map((choice) => ({ value: choice, label: choice })),
+      priority: ["normal", "important", "urgent"].map((choice) => ({ value: choice, label: choice })),
+      galleryCategory: ["Campus", "Classroom", "Lab", "Events", "Workshops", "Seminars", "Students", "Achievements", "Computer Lab", "Smart Classroom", "Practical Sessions", "Institute Building", "Students Learning", "Other"].map((choice) => ({ value: choice, label: choice })),
+    };
+    if (field.type && choices[field.type]) return <select className="input mt-2" value={value || choices[field.type][0].value} onChange={(e) => set(e.target.value)}>{choices[field.type].map((choice) => <option key={choice.value} value={choice.value}>{choice.label}</option>)}</select>;
     if (field.type === "boolean") return <select className="input mt-2" value={String(Boolean(value))} onChange={(e) => set(e.target.value === "true")}><option value="true">Yes</option><option value="false">No</option></select>;
     if (field.type === "textarea" || field.type === "list") return <textarea className="input mt-2 min-h-24" value={field.type === "list" ? (Array.isArray(value) ? value.join("\n") : "") : value} onChange={(e) => set(field.type === "list" ? e.target.value.split("\n").map((v) => v.trim()).filter(Boolean) : e.target.value)} />;
     if (/(image|photo)/i.test(field.key)) return <ImagePicker value={String(value ?? "")} uploading={uploading} progress={uploadProgress} onChange={set} onUpload={(event) => upload(event, set)} />;

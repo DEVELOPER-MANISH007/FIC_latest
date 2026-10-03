@@ -4,7 +4,8 @@ export interface Course {
   description: string;
   icon: string;
   duration?: string;
-  category?: "general" | "programming" | "office" | "industry";
+  /** `general` is retained for legacy database records. */
+  category?: "general" | "office" | "programming" | "professional" | "industry" | "design";
   featured?: boolean;
   badge?: string;
   order?: number;
