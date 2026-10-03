@@ -31,6 +31,8 @@ const QuestionPalette = ({ questions, currentIndex, visited, onNavigate }: Props
         <button
           key={q.questionId}
           onClick={() => onNavigate(i)}
+          aria-label={`Question ${i + 1}, ${getStatus(q, visited.has(i)).replace("-", " ")}`}
+          aria-current={currentIndex === i ? "step" : undefined}
           className={cn(
             "w-9 h-9 rounded-lg text-[12.5px] font-semibold border transition",
             statusClasses[getStatus(q, visited.has(i))],

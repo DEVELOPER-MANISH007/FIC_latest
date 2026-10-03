@@ -138,3 +138,4 @@ export const ICONS: Record<string, IconType> = {
 };
 
 export const getIcon = (key: string): IconType => ICONS[key] || FiCheckCircle;
+

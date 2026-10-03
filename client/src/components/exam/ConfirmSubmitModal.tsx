@@ -16,11 +16,11 @@ const ConfirmSubmitModal = ({ answeredCount, totalCount, submitting, onCancel, o
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[95] flex items-center justify-center p-4">
-      <div className="bg-white rounded-[var(--radius-lg)] max-w-md w-full p-8 text-center">
+      <div role="dialog" aria-modal="true" aria-labelledby="submit-test-title" className="bg-white rounded-[var(--radius-md)] max-w-md w-full p-6 sm:p-8 text-center">
         <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-5">
           <AlertIcon size={26} />
         </div>
-        <h2 className="font-display font-bold text-xl">Submit Test?</h2>
+        <h2 id="submit-test-title" className="font-display font-bold text-xl">Submit Test?</h2>
         <p className="text-[13.5px] text-[var(--ink-soft)] mt-3 leading-relaxed">
           Are you sure you want to submit your test? Once submitted, you cannot change your answers.
         </p>

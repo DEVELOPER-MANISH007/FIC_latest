@@ -8,7 +8,7 @@ const WhatsappIcon = getIcon("whatsapp");
 const MobileStickyCta = () => {
   const { pathname } = useLocation();
   const { settings, cmsAvailable } = useWebsite();
-  const admissionHref = pathname === "/" ? "#admission" : "/#admission";
+  const admissionHref = pathname === "/" ? "#contact" : "/#contact";
   const phone = settings.contact?.phones?.[0] || (cmsAvailable ? "" : SITE.phones[0]);
   const whatsapp = settings.contact?.whatsapp || phone;
   const quickActions = settings.homepage?.quickActions || {};

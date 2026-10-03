@@ -15,3 +15,4 @@ export const startExamAttempt = async (examId: string) => {
   const res = await api.post<ApiResponse<AttemptPaper>>(`/exams/${examId}/start`);
   return res.data.data;
 };
+

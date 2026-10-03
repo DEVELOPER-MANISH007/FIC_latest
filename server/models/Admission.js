@@ -62,3 +62,4 @@ const AdmissionSchema = new mongoose.Schema(
 AdmissionSchema.index({ createdAt: -1 });
 
 export default mongoose.model("Admission", AdmissionSchema);
+

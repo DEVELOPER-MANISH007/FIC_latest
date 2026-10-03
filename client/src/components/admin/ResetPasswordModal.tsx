@@ -92,3 +92,4 @@ const ResetPasswordModal = ({ studentId, studentName, onClose }: Props) => {
 };
 
 export default ResetPasswordModal;
+

@@ -12,3 +12,4 @@ router.get("/admin/export", protectAdmin, exportResults);
 router.get("/:id", protectStudent, getResultById);
 
 export default router;
+

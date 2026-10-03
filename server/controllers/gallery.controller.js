@@ -15,3 +15,4 @@ export const getGallery = asyncHandler(async (req, res) => {
   const items = await Gallery.find(filter).sort({ order: 1, createdAt: 1 });
   return res.status(200).json(new ApiResponse(200, items));
 });
+

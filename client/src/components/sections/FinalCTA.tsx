@@ -19,7 +19,7 @@ const FinalCTA = () => {
             {content.description || "Book your demo class today and see the Future IT College difference for yourself."}
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8 relative">
-            <a href={content.primaryButtonHref || "#admission"} className="btn btn-primary">
+            <a href={content.primaryButtonHref || "#contact"} className="btn btn-primary">
               {content.primaryButtonText || "Apply for Admission"}
             </a>
             {phone && <a href={`tel:+91${phone}`} className="btn btn-outline">

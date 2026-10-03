@@ -110,3 +110,4 @@ export const uploadMaterialFileDirect = async (
 export const deleteMaterial = async (id: string) => {
   await api.delete(`/admin/materials/${id}`);
 };
+

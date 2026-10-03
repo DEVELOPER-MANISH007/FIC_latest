@@ -18,6 +18,7 @@ const AdminStudents = () => {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
+  const [studentSummary, setStudentSummary] = useState({ total: 0, active: 0, inactive: 0 });
   const [resetTarget, setResetTarget] = useState<{ id: string; name: string } | null>(null);
   const [formTarget, setFormTarget] = useState<StudentRow | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -26,8 +27,8 @@ const AdminStudents = () => {
     setLoading(true);
     fetchStudents({ keyword }).then((data) => {
       setStudents((data?.items as any) || []);
-      setLoading(false);
-    });
+      setStudentSummary(data?.summary || { total: 0, active: 0, inactive: 0 });
+    }).catch(() => toast.error("Could not load students. Please try again.")).finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -68,6 +69,14 @@ const AdminStudents = () => {
 
   return (
     <AdminLayout title="Student Management">
+      <div className="mb-6 grid gap-4 sm:grid-cols-3" aria-label="Student account totals">
+        {[["Total students", studentSummary.total], ["Active", studentSummary.active], ["Inactive", studentSummary.inactive]].map(([label, count]) => (
+          <div className="card border-l-4 border-l-[var(--royal)] p-5" key={label}>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]">{label}</p>
+            <p className="mt-2 font-display text-2xl font-bold text-[var(--ink)]">{loading ? "—" : count}</p>
+          </div>
+        ))}
+      </div>
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <input
           className="field max-w-sm"

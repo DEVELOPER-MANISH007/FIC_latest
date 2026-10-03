@@ -43,3 +43,4 @@ export const updateStudySubject = async (
 export const deleteStudySubject = async (courseId: string, subjectId: string) => {
   await api.delete(`/admin/study-courses/${courseId}/subjects/${subjectId}`);
 };
+

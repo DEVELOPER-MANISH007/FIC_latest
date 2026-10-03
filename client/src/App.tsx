@@ -33,7 +33,6 @@ const ResultPage = lazy(() => import("@/pages/student/ResultPage"));
 
 const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
-const AdminAdmissions = lazy(() => import("@/pages/admin/AdminAdmissions"));
 const AdminEnquiries = lazy(() => import("@/pages/admin/AdminEnquiries"));
 const AdminQuestions = lazy(() => import("@/pages/admin/AdminQuestions"));
 const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
@@ -47,6 +46,7 @@ const AdminAttemptLogs = lazy(() => import("@/pages/admin/AdminAttemptLogs"));
 const AdminStudyMaterials = lazy(() => import("@/pages/admin/AdminStudyMaterials"));
 const AdminStudyCourses = lazy(() => import("@/pages/admin/AdminStudyCourses"));
 const AdminWebsite = lazy(() => import("@/pages/admin/AdminWebsite"));
+const AdminAccountSettings = lazy(() => import("@/pages/admin/AdminAccountSettings"));
 const PublicNotices = lazy(() => import("@/pages/PublicNotices"));
 import { Link } from "react-router-dom";
 import { useWebsite } from "@/context/WebsiteContext";
@@ -116,7 +116,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/website" element={<AdminWebsite />} />
-              <Route path="/admin/admissions" element={<AdminAdmissions />} />
+              <Route path="/admin/settings" element={<AdminAccountSettings />} />
               <Route path="/admin/enquiries" element={<AdminEnquiries />} />
               <Route path="/admin/questions" element={<AdminQuestions />} />
               <Route path="/admin/categories" element={<AdminCategories />} />

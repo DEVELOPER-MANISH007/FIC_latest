@@ -25,3 +25,4 @@ router.put("/:id/subjects/:subjectId", updateSubject);
 router.delete("/:id/subjects/:subjectId", deleteSubject);
 
 export default router;
+

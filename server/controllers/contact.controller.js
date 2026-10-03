@@ -11,9 +11,9 @@ import { sendContactNotification } from "../services/email.service.js";
  * @access  Public
  */
 export const createContact = asyncHandler(async (req, res) => {
-  const { name, phone, email, message } = req.body;
+  const { name, phone, email, course, message } = req.body;
 
-  const contact = await Contact.create({ name, phone, email, message });
+  const contact = await Contact.create({ name, phone, email, course, message });
 
   sendContactNotification(contact).catch(() => {});
 

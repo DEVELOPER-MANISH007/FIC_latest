@@ -29,3 +29,4 @@ const SecurityBanner = ({ triggerKey }: Props) => {
 };
 
 export default SecurityBanner;
+

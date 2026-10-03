@@ -19,6 +19,10 @@ const fileFilter = (req, file, cb) => {
  * In-memory upload for Excel/CSV question bank imports — the buffer
  * is parsed immediately and never written to disk.
  */
-const excelUpload = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });
+const excelUpload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024, fieldArrayIndexLimit: 20 },
+});
 
 export default excelUpload;

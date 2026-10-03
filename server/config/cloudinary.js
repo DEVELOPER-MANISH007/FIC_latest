@@ -20,3 +20,4 @@ if (isCloudinaryConfigured) {
 
 export { isCloudinaryConfigured };
 export default cloudinary;
+

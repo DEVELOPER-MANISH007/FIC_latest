@@ -16,3 +16,4 @@ export const fetchAdminAnalytics = async () => {
   }>>("/admin/dashboard/analytics");
   return res.data.data;
 };
+

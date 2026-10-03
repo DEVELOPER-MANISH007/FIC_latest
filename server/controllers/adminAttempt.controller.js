@@ -49,3 +49,4 @@ export const getAttemptById = asyncHandler(async (req, res) => {
   if (!attempt) throw new ApiError(404, "Attempt not found");
   return res.status(200).json(new ApiResponse(200, attempt));
 });
+

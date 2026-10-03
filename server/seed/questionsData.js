@@ -200,3 +200,4 @@ export const QUESTIONS_BY_CATEGORY = {
     Q("What does 'encryption' do to data?", ["Deletes it permanently", "Converts it into a coded form to prevent unauthorized access", "Compresses it for storage", "Prints it automatically"], "B", "Hard"),
   ],
 };
+

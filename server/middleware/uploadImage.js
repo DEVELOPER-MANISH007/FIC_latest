@@ -45,6 +45,10 @@ const storage = isServerless()
       },
     });
 
-const uploadImage = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadImage = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024, fieldArrayIndexLimit: 20 },
+});
 
 export default uploadImage;

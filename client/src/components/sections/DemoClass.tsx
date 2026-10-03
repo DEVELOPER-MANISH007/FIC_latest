@@ -19,9 +19,9 @@ const DemoClass = () => {
               {content.title || "Experience Before You Decide"}
             </h2>
             <p className="text-[#C6CEEF] mt-4 leading-relaxed">
-              {content.description || "Students are welcome to attend demo classes for approximately 5–7 days before taking admission — helping them understand the teaching style, classroom environment and learning experience firsthand."}
+              {content.description || "Students are welcome to attend demo classes for approximately 5–7 days before choosing a course — helping them understand the teaching style, classroom environment and learning experience firsthand."}
             </p>
-            <a href={content.buttonHref || "#admission"} className="btn btn-primary mt-7">
+            <a href={content.buttonHref || "#contact"} className="btn btn-primary mt-7">
               {content.buttonText || "Book a Demo"}
             </a>
           </div>

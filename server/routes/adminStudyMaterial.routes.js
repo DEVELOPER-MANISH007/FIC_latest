@@ -31,3 +31,4 @@ router.put("/:id", uploadMaterial.single("file"), updateMaterial);
 router.delete("/:id", deleteMaterial);
 
 export default router;
+

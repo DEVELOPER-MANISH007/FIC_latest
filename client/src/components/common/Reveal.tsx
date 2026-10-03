@@ -26,3 +26,4 @@ const Reveal = ({ children, delay = 0, className = "", y = 28 }: RevealProps) =>
 );
 
 export default Reveal;
+

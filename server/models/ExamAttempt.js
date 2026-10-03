@@ -66,3 +66,4 @@ const ExamAttemptSchema = new mongoose.Schema(
 ExamAttemptSchema.index({ student: 1, exam: 1 });
 
 export default mongoose.model("ExamAttempt", ExamAttemptSchema);
+

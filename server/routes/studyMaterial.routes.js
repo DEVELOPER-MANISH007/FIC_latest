@@ -14,3 +14,4 @@ router.get("/:id", getMaterialById);
 router.post("/:id/download", registerDownload);
 
 export default router;
+

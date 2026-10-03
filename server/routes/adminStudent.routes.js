@@ -28,3 +28,4 @@ router.patch("/:id/reset-password", resetStudentPassword);
 router.delete("/:id", deleteStudent);
 
 export default router;
+

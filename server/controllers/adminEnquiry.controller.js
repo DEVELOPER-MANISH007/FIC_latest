@@ -11,7 +11,7 @@ const buildFilter = (query) => {
 
   if (query.keyword) {
     const re = new RegExp(query.keyword, "i");
-    filter.$or = [{ name: re }, { phone: re }, { email: re }, { message: re }];
+    filter.$or = [{ name: re }, { phone: re }, { email: re }, { course: re }, { message: re }];
   }
   if (query.status && ALLOWED_STATUSES.includes(query.status)) {
     filter.status = query.status;
@@ -57,6 +57,7 @@ export const exportEnquiries = asyncHandler(async (req, res) => {
       name: c.name,
       phone: c.phone,
       email: c.email,
+      course: c.course,
       message: c.message,
       status: c.status,
       submittedAt: c.createdAt?.toISOString(),
@@ -65,6 +66,7 @@ export const exportEnquiries = asyncHandler(async (req, res) => {
       { key: "name", label: "Name" },
       { key: "phone", label: "Mobile" },
       { key: "email", label: "Email" },
+      { key: "course", label: "Course" },
       { key: "message", label: "Message" },
       { key: "status", label: "Status" },
       { key: "submittedAt", label: "Date & Time" },

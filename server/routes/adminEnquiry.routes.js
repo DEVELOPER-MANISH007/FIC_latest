@@ -19,3 +19,4 @@ router.put("/:id", updateEnquiryStatus);
 router.delete("/:id", deleteEnquiry);
 
 export default router;
+

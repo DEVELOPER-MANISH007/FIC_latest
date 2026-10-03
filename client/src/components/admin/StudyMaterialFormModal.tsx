@@ -183,3 +183,4 @@ const StudyMaterialFormModal = ({ material, onClose, onSaved }: Props) => {
 };
 
 export default StudyMaterialFormModal;
+

@@ -39,3 +39,4 @@ export const useExamTimer = (expiresAt: string | null, onExpire: () => void) => 
 
   return { remaining, formatted, isLow: remaining <= 60 };
 };
+

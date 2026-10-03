@@ -55,3 +55,4 @@ StudentSchema.methods.comparePassword = function (candidate) {
 };
 
 export default mongoose.model("Student", StudentSchema);
+

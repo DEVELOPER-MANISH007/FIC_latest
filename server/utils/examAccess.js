@@ -17,3 +17,4 @@ export const canStudentAccessExam = (exam, studentId) => {
 export const examVisibilityFilter = (studentId) => ({
   $or: [{ assignToAll: true }, { assignedStudents: studentId }],
 });
+

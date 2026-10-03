@@ -10,3 +10,4 @@ const ConnectionBanner = () => (
 );
 
 export default ConnectionBanner;
+

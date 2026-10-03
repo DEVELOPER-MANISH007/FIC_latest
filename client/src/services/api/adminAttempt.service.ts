@@ -16,3 +16,4 @@ export const fetchAttemptLogById = async (id: string) => {
   const res = await api.get<ApiResponse<AttemptLogItem>>(`/admin/attempts/${id}`);
   return res.data.data;
 };
+

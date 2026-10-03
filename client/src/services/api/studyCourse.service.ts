@@ -6,3 +6,4 @@ export const fetchStudyCourses = async (): Promise<StudyCourseItem[]> => {
   const res = await api.get<ApiResponse<StudyCourseItem[]>>("/study-courses");
   return res.data.data || [];
 };
+

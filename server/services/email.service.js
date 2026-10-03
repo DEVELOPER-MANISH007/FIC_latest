@@ -91,3 +91,4 @@ export const sendPasswordResetEmail = (student, resetToken) => {
 };
 
 export default { sendAdmissionNotification, sendContactNotification, sendPasswordResetEmail };
+

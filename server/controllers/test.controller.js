@@ -50,3 +50,4 @@ export const deleteTest = asyncHandler(async (req, res) => {
   if (!test) throw new ApiError(404, "Test not found");
   return res.status(200).json(new ApiResponse(200, null, "Test deleted"));
 });
+

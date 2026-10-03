@@ -31,3 +31,4 @@ router.post("/forgot-password", forgotPasswordValidationRules, validate, forgotP
 router.post("/reset-password", resetPasswordValidationRules, validate, resetPassword);
 
 export default router;
+

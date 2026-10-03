@@ -48,3 +48,4 @@ const SecurityWarningModal = ({ reason, violationCount, maxViolations, onOk }: P
 };
 
 export default SecurityWarningModal;
+

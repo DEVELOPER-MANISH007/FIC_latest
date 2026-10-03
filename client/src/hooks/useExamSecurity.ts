@@ -193,3 +193,4 @@ export const useExamSecurity = ({ active, fullscreenRequired, tabSwitchDetection
 
   return { isFullscreen, isPaused, pausedReason, resume, requestFullscreen, exitFullscreen };
 };
+

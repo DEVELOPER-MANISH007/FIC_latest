@@ -62,3 +62,4 @@ export const getAdmissions = asyncHandler(async (req, res) => {
     })
   );
 });
+

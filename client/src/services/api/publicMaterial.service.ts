@@ -31,3 +31,4 @@ export const registerPublicDownload = async (id: string) => {
   const res = await api.post<ApiResponse<{ fileUrl: string; fileName?: string }>>(`/public/materials/${id}/download`);
   return res.data.data;
 };
+

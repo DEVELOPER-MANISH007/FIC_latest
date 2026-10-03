@@ -32,13 +32,13 @@ const AdminLogin = () => {
   };
 
   return (
-    <AuthLayout title="Admin Login" subtitle="Restricted access — Future IT College staff only.">
+    <AuthLayout variant="admin" title="Admin Portal Login" subtitle="Authorized institute administrators only.">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         <FormField
-          label="Email Address"
+          label="Admin ID / Email"
           id="email"
           type="email"
-          placeholder="admin@futureitcollege.com"
+          placeholder="Enter your admin email"
           error={errors.email?.message}
           {...register("email", { required: "Please enter your email address." })}
         />

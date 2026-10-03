@@ -80,3 +80,4 @@ export const exportResults = asyncHandler(async (req, res) => {
   res.setHeader("Content-Disposition", "attachment; filename=results-export.xlsx");
   return res.status(200).send(buffer);
 });
+

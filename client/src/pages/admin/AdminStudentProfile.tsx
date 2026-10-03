@@ -127,3 +127,4 @@ const AdminStudentProfile = () => {
 };
 
 export default AdminStudentProfile;
+

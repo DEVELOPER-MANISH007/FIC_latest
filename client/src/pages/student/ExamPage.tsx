@@ -236,7 +236,7 @@ const ExamPage = () => {
 
         <div className="grid lg:grid-cols-[1fr_280px] gap-6">
           <div
-            className="card p-8 rounded-[var(--radius-lg)] select-none"
+            className="card select-none rounded-[var(--radius-lg)] p-4 sm:p-8"
             onCopy={(e) => e.preventDefault()}
             onPaste={(e) => e.preventDefault()}
             onCut={(e) => e.preventDefault()}
@@ -256,6 +256,7 @@ const ExamPage = () => {
                       ? "border-[var(--royal)] bg-[var(--royal)]/5"
                       : "border-[var(--line)] hover:border-[var(--royal)]/40"
                   )}
+                  aria-pressed={question.selectedAnswer === opt.letter}
                 >
                   <span
                     className={cn(
@@ -281,7 +282,7 @@ const ExamPage = () => {
                 {question.isMarkedForReview ? "Unmark Review" : "Mark for Review"}
               </button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <button
                   onClick={() => goToQuestion(Math.max(0, currentIndex - 1))}
                   disabled={isLocked || currentIndex === 0}

@@ -39,3 +39,4 @@ QuestionSchema.index({ exam: 1, status: 1 });
 QuestionSchema.index({ question: "text", topic: "text" });
 
 export default mongoose.model("Question", QuestionSchema);
+

@@ -70,3 +70,4 @@ StudyMaterialSchema.index({ course: 1, subjectId: 1, category: 1 });
 StudyMaterialSchema.index({ visibility: 1, isActive: 1 });
 
 export default mongoose.model("StudyMaterial", StudyMaterialSchema);
+

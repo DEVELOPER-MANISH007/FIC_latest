@@ -12,3 +12,4 @@ router.get("/:id", getExamById);
 router.post("/:examId/start", startAttempt);
 
 export default router;
+

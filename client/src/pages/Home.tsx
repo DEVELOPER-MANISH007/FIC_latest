@@ -12,7 +12,7 @@ import Faculty from "@/components/sections/Faculty";
 import StudentSuccess from "@/components/sections/StudentSuccess";
 import LaptopProgram from "@/components/sections/LaptopProgram";
 import Certificate from "@/components/sections/Certificate";
-import AdmissionForm from "@/components/sections/AdmissionForm";
+import AdmissionEnquiry from "@/components/sections/AdmissionEnquiry";
 import Gallery from "@/components/sections/Gallery";
 import Testimonials from "@/components/sections/Testimonials";
 import FAQSection from "@/components/sections/FAQSection";
@@ -36,7 +36,7 @@ const Home = () => {
     { key: "whyChooseUs", component: <WhyChooseUs /> }, { key: "courses", component: <Courses /> }, { key: "industryCourses", component: <IndustryCourses /> },
     { key: "learningJourney", component: <LearningJourney /> }, { key: "scholarship", component: <Scholarship /> }, { key: "demoClass", component: <DemoClass /> },
     { key: "facilities", component: <Facilities /> }, { key: "faculty", component: <Faculty /> }, { key: "studentSuccess", component: <StudentSuccess /> },
-    { key: "laptopProgram", component: <LaptopProgram /> }, { key: "certificate", component: <Certificate /> }, { key: "admission", component: <AdmissionForm /> },
+    { key: "laptopProgram", component: <LaptopProgram /> }, { key: "certificate", component: <Certificate /> }, { key: "admission", component: <AdmissionEnquiry /> },
     { key: "gallery", component: <Gallery /> }, { key: "testimonials", component: <Testimonials /> }, { key: "faqs", component: <FAQSection /> },
     { key: "notices", component: <NoticesPreview /> }, { key: "library", component: <LibraryCallout /> }, { key: "contact", component: <ContactSection /> }, { key: "finalCta", component: <FinalCTA /> },
   ];

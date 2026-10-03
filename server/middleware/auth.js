@@ -51,8 +51,11 @@ export const protectAdmin = asyncHandler(async (req, res, next) => {
 
   if (decoded.role !== "admin") throw new ApiError(403, "Admin access only");
 
-  const admin = await Admin.findById(decoded.id);
+  const admin = await Admin.findById(decoded.id).select("+authVersion");
   if (!admin) throw new ApiError(401, "Admin account not found");
+  if (Number(decoded.authVersion || 0) !== Number(admin.authVersion || 0)) {
+    throw new ApiError(401, "Your session has expired — please log in again");
+  }
 
   req.admin = admin;
   next();

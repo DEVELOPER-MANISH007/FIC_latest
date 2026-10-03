@@ -161,3 +161,4 @@ export interface ImportSummary {
   failedCount: number;
   failed: Array<{ row: number; reason: string }>;
 }
+

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
 import FormField from "@/components/common/FormField";
-import { SITE } from "@/constants/siteData";
+import { COURSE_OPTIONS, SITE } from "@/constants/siteData";
 import { getIcon } from "@/constants/iconMap";
 import { submitContact } from "@/services/api/contact.service";
 import type { ContactFormData, SubmitStatus } from "@/types";
@@ -14,7 +14,7 @@ const PhoneIcon = getIcon("phone");
 const MailIcon = getIcon("mail");
 
 const ContactSection = () => {
-  const { settings, cmsAvailable } = useWebsite();
+  const { settings, cmsAvailable, courses } = useWebsite();
   const contact = settings.contact || {};
   const brand = settings.brand || {};
   const address = contact.address || (cmsAvailable ? {} : SITE.address);
@@ -27,6 +27,7 @@ const ContactSection = () => {
   const mapEmbedUrl = contact.mapEmbedUrl || (cmsAvailable ? "" : SITE.mapEmbedUrl);
   const addressLine = [address.line1, address.city, address.state, address.pincode].filter(Boolean).join(", ");
   const addressText = addressLine || (cmsAvailable ? "" : `${SITE.address.city}, ${SITE.address.state} – ${SITE.address.pincode}`);
+  const courseOptions = cmsAvailable ? courses.map((course) => course.title) : COURSE_OPTIONS;
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [serverMessage, setServerMessage] = useState("");
 
@@ -125,7 +126,7 @@ const ContactSection = () => {
         <Reveal delay={0.15} className="card p-8 lg:p-10 rounded-[var(--radius-lg)] mt-8">
           <h3 className="font-display font-semibold text-xl">Send us a quick message</h3>
           <p className="text-[13.5px] text-[var(--ink-soft)] mt-1">
-            For general questions — for course enquiries, use the admission form above.
+            Ask about a course, a demo class or visiting the institute. Our team will get back to you.
           </p>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid sm:grid-cols-2 gap-5 mt-6">
             <FormField
@@ -146,6 +147,12 @@ const ContactSection = () => {
                 pattern: { value: /^[6-9]\d{9}$/, message: "Please enter a valid 10-digit mobile number." },
               })}
             />
+            <div className="sm:col-span-2">
+              <FormField as="select" label="Interested course" id="contact-course" optional defaultValue="" {...register("course")}>
+                <option value="">Choose a course (optional)</option>
+                {courseOptions.map((course) => <option key={course} value={course}>{course}</option>)}
+              </FormField>
+            </div>
             <div className="sm:col-span-2">
               <FormField
                 label="Email"

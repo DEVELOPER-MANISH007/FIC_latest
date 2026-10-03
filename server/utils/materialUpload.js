@@ -126,3 +126,4 @@ export async function deleteUploadedMaterial({ fileUrl, filePublicId, fileResour
     console.error("[StudyMaterial] Failed to remove underlying file:", error.message);
   }
 }
+

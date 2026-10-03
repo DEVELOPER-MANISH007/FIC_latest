@@ -21,6 +21,8 @@ export const contactValidationRules = [
     .isEmail()
     .withMessage("Please provide a valid email address"),
 
+  body("course").optional({ checkFalsy: true }).trim().isLength({ max: 120 }).withMessage("Course name cannot exceed 120 characters"),
+
   body("message")
     .trim()
     .notEmpty()

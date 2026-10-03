@@ -85,3 +85,4 @@ export const registerDownload = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, { fileUrl: material.fileUrl, fileName: material.fileName }, "Download counted"));
 });
+

@@ -36,3 +36,4 @@ router.delete("/:examId/questions/:questionId", deleteExamQuestion);
 router.post("/:examId/questions/:questionId/duplicate", duplicateExamQuestion);
 
 export default router;
+

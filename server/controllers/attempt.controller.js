@@ -380,3 +380,4 @@ export const getMyResults = asyncHandler(async (req, res) => {
   const results = await Result.find({ student: req.student._id }).populate("exam", "name topic").sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, results));
 });
+

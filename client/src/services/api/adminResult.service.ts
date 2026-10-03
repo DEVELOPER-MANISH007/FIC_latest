@@ -18,3 +18,4 @@ export const exportResultsExcel = async (params: { student?: string; exam?: stri
   link.click();
   link.remove();
 };
+

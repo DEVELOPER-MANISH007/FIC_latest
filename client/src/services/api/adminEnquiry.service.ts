@@ -39,3 +39,4 @@ export const exportEnquiriesCSV = async (params: EnquiryListParams = {}) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+

@@ -7,3 +7,4 @@ const isServerless = () =>
   !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 export default isServerless;
+

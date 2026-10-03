@@ -43,7 +43,7 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-wrap gap-4 mt-9">
-          <a href={activeBanner?.primaryCtaHref || hero.primaryButtonHref || "#admission"} className="btn btn-primary">
+          <a href={activeBanner?.primaryCtaHref || hero.primaryButtonHref || "#contact"} className="btn btn-primary">
             {activeBanner?.primaryCtaText || hero.primaryButtonText || "Apply for Admission"}
             <ArrowRightIcon size={16} />
           </a>

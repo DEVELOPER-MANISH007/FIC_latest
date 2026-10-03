@@ -18,3 +18,4 @@ export const parseBrowserLabel = (ua?: string): string => {
 
   return os ? `${browser} on ${os}` : browser;
 };
+

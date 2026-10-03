@@ -19,3 +19,4 @@ const SectionEyebrow = ({ children, variant = "default" }: SectionEyebrowProps) 
 );
 
 export default SectionEyebrow;
+

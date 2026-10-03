@@ -59,3 +59,4 @@ export const resetPassword = async (token: string, password: string) => {
   const res = await api.post<ApiResponse<null>>("/student/auth/reset-password", { token, password });
   return res.data.message;
 };
+

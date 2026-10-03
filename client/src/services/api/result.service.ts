@@ -32,3 +32,4 @@ export const downloadResultsExport = async (filters: { student?: string; test?: 
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+

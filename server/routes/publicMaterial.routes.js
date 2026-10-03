@@ -17,3 +17,4 @@ router.get("/:id", getPublicMaterialById);
 router.post("/:id/download", registerPublicDownload);
 
 export default router;
+

@@ -42,3 +42,4 @@ export const fetchMyResults = async () => {
   const res = await api.get<ApiResponse<ExamResult[]>>("/attempts/results/mine");
   return res.data.data;
 };
+

@@ -8,7 +8,7 @@ const AdmissionProcess = () => {
   const process = settings.homepage?.sections?.admission?.process || {};
   const configuredSteps = process.steps;
   const steps = Array.isArray(configuredSteps) ? configuredSteps.filter((item: any) => item.isActive !== false) : ADMISSION_PROCESS;
-  return <div className="mt-16 relative">
+  return <div className="relative">
     <SectionHeading eyebrow={process.eyebrow || "Admission Process"} title={process.title || "Six simple steps to get started"} />
     <div className="mt-16 relative">
       <div className="roadmap-line lg:hidden" />

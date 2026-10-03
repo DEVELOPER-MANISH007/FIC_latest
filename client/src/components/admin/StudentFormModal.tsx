@@ -139,3 +139,4 @@ const StudentFormModal = ({ student, onClose, onSaved }: Props) => {
 };
 
 export default StudentFormModal;
+

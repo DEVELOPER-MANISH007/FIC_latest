@@ -41,7 +41,7 @@ const StudentLayout = ({ children, title }: { children: ReactNode; title: string
 
   const handleLogout = () => {
     logout();
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   };
 
   const sidebarContent = (

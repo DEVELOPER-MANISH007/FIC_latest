@@ -53,7 +53,7 @@ const UserMenu = ({ scrolled = false, fullWidth = false, onNavigate }: UserMenuP
     logout();
     close();
     onNavigate?.();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   if (!student) return null;

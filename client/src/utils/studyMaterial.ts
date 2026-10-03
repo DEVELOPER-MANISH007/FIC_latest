@@ -31,3 +31,4 @@ export const FILE_TYPE_COLOR: Record<StudyMaterialFileType, string> = {
   image: "bg-purple-50 text-purple-600",
   file: "bg-[var(--bg-soft)] text-[var(--ink-soft)]",
 };
+

@@ -21,3 +21,4 @@ export const buildExcelBuffer = (rows, sheetName = "Sheet1") => {
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 };
+

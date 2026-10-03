@@ -21,3 +21,4 @@ const ResultSchema = new mongoose.Schema(
 ResultSchema.index({ student: 1, exam: 1 }, { unique: true });
 
 export default mongoose.model("Result", ResultSchema);
+

@@ -25,7 +25,7 @@ const IndustryCourses = () => {
         <div className="grid sm:grid-cols-2 gap-4 mt-8">
           {highlights.map((item: string) => <div key={item} className="flex items-center gap-3"><CheckIcon size={18} color="var(--orange-soft)" /><span className="text-sm font-medium">{item}</span></div>)}
         </div>
-        <a href={content.buttonHref || "#admission"} className="btn btn-primary mt-8">{content.buttonText || "Ask about industry courses"}</a>
+        <a href={content.buttonHref || "#contact"} className="btn btn-primary mt-8">{content.buttonText || "Ask about industry courses"}</a>
       </Reveal>
       <div className="grid sm:grid-cols-2 gap-4">
         {cards.map((course, index) => {

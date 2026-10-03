@@ -93,6 +93,7 @@ const AdminEnquiries = () => {
                 <th className="p-4">Name</th>
                 <th className="p-4">Mobile</th>
                 <th className="p-4">Email</th>
+                <th className="p-4">Course</th>
                 <th className="p-4">Date &amp; Time</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Actions</th>
@@ -104,6 +105,7 @@ const AdminEnquiries = () => {
                   <td className="p-4 font-medium">{c.name}</td>
                   <td className="p-4 text-[var(--ink-soft)]">{c.phone}</td>
                   <td className="p-4 text-[var(--ink-soft)]">{c.email || "—"}</td>
+                  <td className="p-4 text-[var(--ink-soft)]">{c.course || "—"}</td>
                   <td className="p-4 text-[var(--ink-soft)]">
                     {c.createdAt ? new Date(c.createdAt).toLocaleString("en-IN") : "—"}
                   </td>
@@ -132,7 +134,7 @@ const AdminEnquiries = () => {
               ))}
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-[var(--ink-soft)]">
+                  <td colSpan={7} className="p-8 text-center text-[var(--ink-soft)]">
                     No enquiries found.
                   </td>
                 </tr>
@@ -172,6 +174,7 @@ const AdminEnquiries = () => {
                 ["Name", viewing.name],
                 ["Mobile", viewing.phone],
                 ["Email", viewing.email || "—"],
+                ["Interested course", viewing.course || "—"],
                 ["Message", viewing.message],
                 ["Date & Time", viewing.createdAt ? new Date(viewing.createdAt).toLocaleString("en-IN") : "—"],
                 ["Status", viewing.status],

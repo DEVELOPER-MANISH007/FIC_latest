@@ -26,3 +26,4 @@ export const deleteTest = async (id: string) => {
   const { data } = await api.delete<ApiResponse<null>>(`/tests/admin/${id}`);
   return data.message;
 };
+

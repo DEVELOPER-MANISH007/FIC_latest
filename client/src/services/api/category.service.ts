@@ -19,3 +19,4 @@ export const updateCategory = async (id: string, payload: Partial<Category>) => 
 export const deleteCategory = async (id: string) => {
   await api.delete(`/categories/${id}`);
 };
+

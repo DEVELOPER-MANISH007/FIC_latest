@@ -34,3 +34,4 @@ const StudyCourseSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("StudyCourse", StudyCourseSchema);
+

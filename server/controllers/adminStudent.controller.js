@@ -43,15 +43,19 @@ export const getStudents = asyncHandler(async (req, res) => {
     ];
   }
 
-  const [items, total] = await Promise.all([
+  const [items, total, totalStudents, activeStudents, inactiveStudents] = await Promise.all([
     Student.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
     Student.countDocuments(filter),
+    Student.countDocuments(),
+    Student.countDocuments({ isActive: true }),
+    Student.countDocuments({ isActive: false }),
   ]);
 
   return res.status(200).json(
     new ApiResponse(200, {
       items: items.map(publicStudent),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      summary: { total: totalStudents, active: activeStudents, inactive: inactiveStudents },
     })
   );
 });

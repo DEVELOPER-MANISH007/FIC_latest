@@ -29,3 +29,4 @@ export const useCounter = (target: number, duration = 1400) => {
 
   return { ref, value };
 };
+

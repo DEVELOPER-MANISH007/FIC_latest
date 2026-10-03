@@ -23,6 +23,10 @@ const fileFilter = (req, file, cb) => {
   cb(new ApiError(400, `Unsupported file type "${file.mimetype}". Upload a .xlsx or .csv file.`));
 };
 
-const uploadExcel = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });
+const uploadExcel = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024, fieldArrayIndexLimit: 20 },
+});
 
 export default uploadExcel;

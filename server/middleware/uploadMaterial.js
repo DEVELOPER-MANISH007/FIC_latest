@@ -68,7 +68,7 @@ const storage = isServerless()
 const uploadMaterial = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 50 * 1024 * 1024, fieldArrayIndexLimit: 20 }, // 50MB
 });
 
 export default uploadMaterial;

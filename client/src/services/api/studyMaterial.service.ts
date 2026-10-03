@@ -32,3 +32,4 @@ export const registerDownload = async (id: string) => {
   const res = await api.post<ApiResponse<{ fileUrl: string; fileName?: string }>>(`/materials/${id}/download`);
   return res.data.data;
 };
+

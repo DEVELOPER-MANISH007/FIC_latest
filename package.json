@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"node server/server.js\" \"vite --config client/vite.config.ts --port 3000 --host\"",
-    "build": "vite build --config client/vite.config.ts",
+    "build": "vite build --config client/vite.config.ts --configLoader runner",
     "start": "node server/server.js",
     "seed": "node server/seed/seed.js",
     "seed:exam": "node server/seed/seedExam.js",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",
-    "axios": "^1.7.9",
+    "axios": "^1.20.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
@@ -24,16 +24,16 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.3",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-icons": "^5.4.0",
-    "react-router-dom": "^7.1.1",
+    "react-router-dom": "^7.18.4",
     "recharts": "^2.15.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",

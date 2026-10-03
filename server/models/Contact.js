@@ -20,6 +20,7 @@ const ContactSchema = new mongoose.Schema(
       lowercase: true,
       default: "",
     },
+    course: { type: String, trim: true, default: "", maxlength: 120 },
     message: {
       type: String,
       required: [true, "Message is required"],

@@ -291,3 +291,4 @@ const AdminStudyCourses = () => {
 };
 
 export default AdminStudyCourses;
+

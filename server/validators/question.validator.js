@@ -11,3 +11,4 @@ export const questionValidationRules = [
   body("difficulty").optional().isIn(["Easy", "Medium", "Hard"]),
   body("marks").optional().isFloat({ min: 0 }),
 ];
+

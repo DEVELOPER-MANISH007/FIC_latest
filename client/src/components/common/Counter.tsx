@@ -17,3 +17,4 @@ const Counter = ({ target, suffix = "", className = "" }: CounterProps) => {
 };
 
 export default Counter;
+

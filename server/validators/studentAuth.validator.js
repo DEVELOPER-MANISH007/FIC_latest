@@ -26,3 +26,4 @@ export const resetPasswordValidationRules = [
   body("token").notEmpty().withMessage("Reset token is required"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
 ];
+

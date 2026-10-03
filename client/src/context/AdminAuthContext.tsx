@@ -8,6 +8,7 @@ interface AdminAuthContextValue {
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => void;
+  replaceSession: (token: string, admin: AdminUser) => void;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(undefined);
@@ -40,7 +41,12 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setAdmin(null);
   };
 
-  return <AdminAuthContext.Provider value={{ admin, loading, login, logout }}>{children}</AdminAuthContext.Provider>;
+  const replaceSession = (token: string, updatedAdmin: AdminUser) => {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+    setAdmin(updatedAdmin);
+  };
+
+  return <AdminAuthContext.Provider value={{ admin, loading, login, logout, replaceSession }}>{children}</AdminAuthContext.Provider>;
 };
 
 export const useAdminAuth = () => {

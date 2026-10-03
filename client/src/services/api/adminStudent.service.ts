@@ -26,11 +26,14 @@ const normalizeStudent = (raw: RawStudent): StudentUser & { isActive?: boolean }
 });
 
 export const fetchStudents = async (params: { page?: number; limit?: number; keyword?: string } = {}) => {
-  const res = await api.get<ApiResponse<PaginatedResponse<RawStudent>>>("/admin/students", { params });
+  const res = await api.get<ApiResponse<PaginatedResponse<RawStudent> & {
+    summary?: { total: number; active: number; inactive: number };
+  }>>("/admin/students", { params });
   const data = res.data.data;
   return {
     ...data,
     items: (data?.items || []).map(normalizeStudent),
+    summary: data?.summary || { total: data?.pagination?.total || 0, active: 0, inactive: 0 },
   };
 };
 

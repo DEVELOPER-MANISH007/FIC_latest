@@ -11,7 +11,7 @@ export const defaultWebsiteContent = {
     establishedYear: 2016,
     logo: "",
     favicon: "/favicon.png",
-    primaryColor: "#2547E0",
+    primaryColor: "#193B5A",
     secondaryColor: "#0D1533",
   },
   navbar: {

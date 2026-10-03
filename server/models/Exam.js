@@ -54,3 +54,4 @@ const ExamSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Exam", ExamSchema);
+

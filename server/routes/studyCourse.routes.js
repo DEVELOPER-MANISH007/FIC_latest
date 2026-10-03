@@ -6,3 +6,4 @@ const router = Router();
 router.get("/", getStudyCourses);
 
 export default router;
+

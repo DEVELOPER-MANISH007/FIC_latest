@@ -23,3 +23,4 @@ export const useFullscreen = () => {
 
   return { isFullscreen, enter, exit };
 };
+

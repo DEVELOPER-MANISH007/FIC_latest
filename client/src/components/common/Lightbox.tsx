@@ -43,3 +43,4 @@ const Lightbox = ({ src, alt, onClose }: LightboxProps) => (
 );
 
 export default Lightbox;
+

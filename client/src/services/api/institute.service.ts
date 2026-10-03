@@ -9,3 +9,4 @@ export const fetchInstituteDetails = async (): Promise<InstituteDetails | null> 
     return null;
   }
 };
+

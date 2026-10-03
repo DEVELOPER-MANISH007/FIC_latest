@@ -7,3 +7,4 @@ export const submitContact = async (
   const { data } = await api.post<ApiResponse<{ id: string }>>("/contact", payload);
   return data;
 };
+

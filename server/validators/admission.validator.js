@@ -50,3 +50,4 @@ export const admissionValidationRules = [
     .isLength({ max: 1000 })
     .withMessage("Message cannot exceed 1000 characters"),
 ];
+

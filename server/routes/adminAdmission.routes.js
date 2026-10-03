@@ -19,3 +19,4 @@ router.put("/:id", updateAdmissionStatus);
 router.delete("/:id", deleteAdmission);
 
 export default router;
+

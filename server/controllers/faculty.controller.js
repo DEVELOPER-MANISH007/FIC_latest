@@ -11,3 +11,4 @@ export const getFaculty = asyncHandler(async (req, res) => {
   const faculty = await Faculty.find({ isActive: true }).sort({ order: 1, createdAt: 1 });
   return res.status(200).json(new ApiResponse(200, faculty));
 });
+

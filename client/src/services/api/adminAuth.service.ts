@@ -12,3 +12,4 @@ export const getAdminMe = async () => {
   const res = await api.get<ApiResponse<AdminUser>>("/admin/auth/me");
   return res.data.data;
 };
+
