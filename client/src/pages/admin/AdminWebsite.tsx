@@ -34,7 +34,7 @@ const AdminWebsite = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const resource = tab in RESOURCE_LABELS ? tab as Resource : null;
+  const resource = Object.entries(RESOURCE_LABELS).find(([name, label]) => tab === name || tab === label)?.[0] as Resource | undefined;
 
   const loadSettings = async () => {
     setSettingsError("");
@@ -112,7 +112,7 @@ const AdminWebsite = () => {
   };
 
   const nav = ["Overview", ...SETTINGS_GROUPS.map((group) => SETTING_LABELS[group]), "Facilities", ...Object.entries(RESOURCE_LABELS).map(([, label]) => label), "Media library"];
-  const tabResource = Object.entries(RESOURCE_LABELS).find(([, label]) => label === tab)?.[0] as Resource | undefined;
+  const tabResource = resource;
   const activeGroup = SETTINGS_GROUPS.find((group) => SETTING_LABELS[group] === tab) || null;
   const facilitySettings = settings.homepage?.sections?.facilities;
   const currentItems = useMemo(() => items, [items]);
