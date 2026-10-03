@@ -2,11 +2,7 @@ import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
 import { getIcon } from "@/constants/iconMap";
 import { COURSE_CATALOG } from "@/data/courses";
-import type { Course } from "@/types";
 import { useWebsite } from "@/context/WebsiteContext";
-import { resolveImageUrl } from "@/services/api/axiosInstance";
-
-const ArrowRightIcon = getIcon("arrowRight");
 const COURSE_CATEGORY_LABELS: Record<string, string> = {
   general: "Computer & Office",
   office: "Computer & Office",
@@ -33,31 +29,18 @@ const Courses = () => {
 
         {visibleCourses.length > 0 ? <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
           {visibleCourses.map((course, i) => {
-            const c = course as Course;
-            const Icon = getIcon(c.icon);
+            const Icon = getIcon(course.icon);
             return (
-              <Reveal key={c.title} delay={(i % 6) * 0.06}>
+              <Reveal key={course.title} delay={(i % 6) * 0.06}>
                 <div className="card p-6 h-full flex flex-col">
-                  {c.image && <img src={c.image.startsWith("/uploads") ? resolveImageUrl(c.image) : c.image} alt={c.title} className="w-full h-40 object-cover rounded-lg mb-5" loading="lazy" onError={(event) => { event.currentTarget.remove(); }} />}
                   <div className="flex items-start justify-between">
                     <div className="icon-wrap">
                       <Icon size={24} />
                     </div>
-                  {c.badge && <span className="badge-new">{c.badge}</span>}
+                  {course.badge && <span className="badge-new">{course.badge}</span>}
                   </div>
-                  <div className="flex items-center justify-between gap-2 mt-5"><h3 className="font-display font-semibold text-lg">{c.shortTitle || c.title}</h3>{c.category && <span className="text-[10px] tracking-wide text-[var(--ink-soft)]">{COURSE_CATEGORY_LABELS[c.category] || c.category}</span>}</div>
-                  <p className="text-[13.5px] text-[var(--ink-soft)] mt-2 leading-relaxed">{c.description}</p>
-                  {(c.duration || c.eligibility || c.feeDisplay) && <dl className="grid grid-cols-2 gap-2 mt-4 text-xs text-[var(--ink-soft)]">{c.duration && <div><dt className="font-semibold text-[var(--ink)]">Duration</dt><dd>{c.duration}</dd></div>}{c.eligibility && <div><dt className="font-semibold text-[var(--ink)]">Eligibility</dt><dd>{c.eligibility}</dd></div>}{c.feeDisplay && <div className="col-span-2"><dt className="font-semibold text-[var(--ink)]">Fees</dt><dd>{c.feeDisplay}</dd></div>}</dl>}
-                  {c.features?.length ? <ul className="mt-4 list-disc pl-5 text-xs text-[var(--ink-soft)] space-y-1">{c.features.slice(0, 3).map((feature) => <li key={feature}>{feature}</li>)}</ul> : null}
-                  {c.subjects?.length ? <p className="mt-3 text-xs text-[var(--ink-soft)]"><span className="font-semibold text-[var(--ink)]">Subjects:</span> {c.subjects.slice(0, 4).join(", ")}</p> : null}
-                  {c.batches?.length ? <p className="mt-1 text-xs text-[var(--ink-soft)]"><span className="font-semibold text-[var(--ink)]">Batches:</span> {c.batches.join(", ")}</p> : null}
-                  {c.ctaHref && c.ctaLabel && <a
-                    href={c.ctaHref}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[var(--royal)] mt-auto pt-5 hover:underline"
-                  >
-                    {c.ctaLabel}
-                    <ArrowRightIcon size={14} />
-                  </a>}
+                  <div className="flex items-center justify-between gap-2 mt-5"><h3 className="font-display font-semibold text-lg">{course.title}</h3><span className="text-[10px] tracking-wide text-[var(--ink-soft)]">{COURSE_CATEGORY_LABELS[course.category || "office"]}</span></div>
+                  {course.subjects?.length ? <p className="mt-3 text-xs text-[var(--ink-soft)]"><span className="font-semibold text-[var(--ink)]">Subjects:</span> {course.subjects.join(", ")}</p> : null}
                 </div>
               </Reveal>
             );

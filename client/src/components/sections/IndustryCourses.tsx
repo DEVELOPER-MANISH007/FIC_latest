@@ -3,7 +3,6 @@ import SectionEyebrow from "@/components/common/SectionEyebrow";
 import { getIcon } from "@/constants/iconMap";
 import { INDUSTRY_COURSES } from "@/data/courses";
 import { useWebsite } from "@/context/WebsiteContext";
-import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 const CheckIcon = getIcon("checkCircle");
 const IndustryCourses = () => {
@@ -27,13 +26,11 @@ const IndustryCourses = () => {
       <div className="grid sm:grid-cols-2 gap-4">
         {cards.map((course, index) => {
           const Icon = getIcon(course.icon || "monitor");
-          return <Reveal key={course._id || course.title} delay={index * 0.08}>
+          return <Reveal key={course.title} delay={index * 0.08}>
             <article className="h-full rounded-xl border border-white/15 bg-white p-6 text-[var(--ink)] shadow-sm">
-              {course.image && <img src={course.image.startsWith("/uploads") ? resolveImageUrl(course.image) : course.image} alt="" className="w-full h-32 object-cover rounded-lg mb-4" loading="lazy" onError={(event) => { event.currentTarget.remove(); }} />}
-              <div className="w-12 h-12 rounded-lg bg-[var(--bg-soft)] text-[var(--royal)] flex items-center justify-center mb-4"><Icon size={24} /></div>
-              <h3 className="font-display font-semibold text-lg">{course.shortTitle || course.title}</h3>
-              <p className="text-sm text-[var(--ink-soft)] mt-2 leading-relaxed">{course.description}</p>
-              {course.duration && <p className="text-xs text-[var(--ink-soft)] mt-4">Duration: {course.duration}</p>}
+              <div className="flex items-start justify-between gap-3 mb-4"><div className="w-12 h-12 rounded-lg bg-[var(--bg-soft)] text-[var(--royal)] flex items-center justify-center"><Icon size={24} /></div>{course.badge && <span className="badge-new">{course.badge}</span>}</div>
+              <h3 className="font-display font-semibold text-lg">{course.title}</h3>
+              {course.subjects?.length ? <p className="text-xs text-[var(--ink-soft)] mt-2"><span className="font-semibold text-[var(--ink)]">Subjects:</span> {course.subjects.join(", ")}</p> : null}
             </article>
           </Reveal>;
         })}

@@ -1,7 +1,7 @@
 export interface Course {
   _id?: string;
   title: string;
-  description: string;
+  description?: string;
   icon: string;
   duration?: string;
   /** `general` is retained for legacy database records. */
