@@ -4,12 +4,12 @@ import { ADMISSION_PROCESS } from "@/constants/siteData";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const AdmissionProcess = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const process = settings.homepage?.sections?.admission?.process || {};
   const configuredSteps = process.steps;
-  const steps = Array.isArray(configuredSteps) ? configuredSteps.filter((item: any) => item.isActive !== false) : ADMISSION_PROCESS;
+  const steps = Array.isArray(configuredSteps) ? configuredSteps.filter((item: any) => item.isActive !== false) : cmsAvailable ? [] : ADMISSION_PROCESS;
   return <div className="relative">
-    <SectionHeading eyebrow={process.eyebrow || "Admission Process"} title={process.title || "Six simple steps to get started"} />
+    <SectionHeading eyebrow={cmsAvailable ? process.eyebrow ?? "" : process.eyebrow || "Admission Process"} title={cmsAvailable ? process.title ?? "" : process.title || "Six simple steps to get started"} />
     <div className="mt-16 relative">
       <div className="roadmap-line lg:hidden" />
       <div className="hidden lg:block roadmap-line-h" />

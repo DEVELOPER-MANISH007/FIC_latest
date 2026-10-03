@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { getIcon } from "@/constants/iconMap";
 import { HERO_IMAGES } from "@/assets/hero-images";
@@ -10,6 +10,14 @@ const ChevronRightIcon = getIcon("chevronRight");
 
 const AUTOPLAY_MS = 5000;
 
+const isUsableImagePath = (value: unknown): value is string => {
+  if (typeof value !== "string" || !value.trim()) return false;
+  const path = value.trim();
+  return path.startsWith("/") || /^https?:\/\//i.test(path);
+};
+
+const imageUrl = (path: string) => path.startsWith("/uploads") ? resolveImageUrl(path) : path;
+
 /**
  * Fullscreen background image slider for the Hero section.
  * Renders BEHIND the existing `.hero-bg` gradient overlay, so all
@@ -18,14 +26,24 @@ const AUTOPLAY_MS = 5000;
  */
 const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<string, any> | null) => void }) => {
   const { banners, cmsAvailable } = useWebsite();
-  const slides = banners.filter((banner) => banner.image);
-  const images = cmsAvailable ? slides.map((banner) => banner.image) : HERO_IMAGES;
+  // Keep CMS banners (including records without an image) so their content and
+  // display order stay CMS-driven. Use the existing bundled institute photos
+  // only as a safe image fallback.
+  const slides = useMemo(() => cmsAvailable ? banners : [], [banners, cmsAvailable]);
+  const images = useMemo(
+    () => slides.length
+      ? slides.map((banner, slideIndex) => isUsableImagePath(banner.image) ? imageUrl(banner.image.trim()) : HERO_IMAGES[slideIndex % HERO_IMAGES.length])
+      : HERO_IMAGES,
+    [slides]
+  );
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const slideCount = images.length;
-  useEffect(() => { onBannerChange?.(slides[index] || null); }, [slides, index, onBannerChange]);
+  const activeIndex = index < slideCount ? index : 0;
+  const fallbackImage = HERO_IMAGES[activeIndex % HERO_IMAGES.length];
+  useEffect(() => { onBannerChange?.(slides[activeIndex] || null); }, [slides, activeIndex, onBannerChange]);
   useEffect(() => { if (index >= slideCount) setIndex(0); }, [index, slideCount]);
 
   const goTo = useCallback(
@@ -54,20 +72,29 @@ const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<strin
   return (
     <div
       className="hero-slider"
+      style={{ backgroundImage: `url("${fallbackImage}")`, backgroundSize: "cover", backgroundPosition: "center 35%" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-hidden="true"
     >
       <AnimatePresence initial={false}>
-        <picture key={index}>
-        {slides[index]?.mobileImage && <source media="(max-width: 640px)" srcSet={slides[index].mobileImage.startsWith("/uploads") ? resolveImageUrl(slides[index].mobileImage) : slides[index].mobileImage} />}
+        <picture key={slides[activeIndex]?._id || activeIndex}>
+        {isUsableImagePath(slides[activeIndex]?.mobileImage) && <source media="(max-width: 640px)" srcSet={imageUrl(slides[activeIndex].mobileImage.trim())} />}
         <motion.img
-          key={index}
-          src={images[index]?.startsWith("/uploads") ? resolveImageUrl(images[index]) : images[index]}
+          key={slides[activeIndex]?._id || activeIndex}
+          src={images[activeIndex]}
           alt=""
           className="hero-slide-img"
-          loading={index === 0 ? "eager" : "lazy"}
+          loading="eager"
           decoding="async"
+          onError={(event) => {
+            const image = event.currentTarget;
+            if (image.dataset.fallbackApplied === "true") return;
+            image.dataset.fallbackApplied = "true";
+            image.parentElement?.querySelector("source")?.setAttribute("srcset", fallbackImage);
+            image.removeAttribute("srcset");
+            image.src = fallbackImage;
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -102,8 +129,8 @@ const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<strin
                 type="button"
                 role="tab"
                 aria-label={`Go to slide ${i + 1}`}
-                aria-selected={i === index}
-                className={`hero-slider-dot ${i === index ? "is-active" : ""}`}
+                aria-selected={i === activeIndex}
+                className={`hero-slider-dot ${i === activeIndex ? "is-active" : ""}`}
                 onClick={() => goTo(i)}
               />
             ))}

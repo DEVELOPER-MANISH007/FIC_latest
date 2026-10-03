@@ -6,8 +6,9 @@ import { useWebsite } from "@/context/WebsiteContext";
 const LaptopIcon = getIcon("laptop");
 
 const LaptopProgram = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const content = settings.homepage?.sections?.laptopProgram || {};
+  const text = (value: string | undefined, fallback: string) => cmsAvailable ? value ?? "" : value || fallback;
   return (
   <section className="py-16 lg:py-20">
     <div className="container-x">
@@ -17,12 +18,12 @@ const LaptopProgram = () => {
             <LaptopIcon size={34} />
           </div>
           <div>
-            <SectionEyebrow>{content.eyebrow || "Support Program"}</SectionEyebrow>
+            <SectionEyebrow>{text(content.eyebrow, "Support Program")}</SectionEyebrow>
             <h2 className="font-display font-bold text-2xl lg:text-3xl mt-3">
-              {content.title || "Affordable Refurbished Laptop Assistance"}
+              {text(content.title, "Affordable Refurbished Laptop Assistance")}
             </h2>
             <p className="text-[var(--ink-soft)] mt-4 leading-relaxed max-w-2xl">
-              {content.description || "Students who need a personal computer for learning may receive guidance in purchasing quality refurbished laptops at reasonable prices. Speak with our team to learn more about current options."}
+              {text(content.description, "Students who need a personal computer for learning may receive guidance in purchasing quality refurbished laptops at reasonable prices. Speak with our team to learn more about current options.")}
             </p>
           </div>
         </div>

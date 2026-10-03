@@ -5,9 +5,9 @@ import { getIcon } from "@/constants/iconMap";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const WhyChooseUs = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const configured = settings.homepage?.sections?.whyChooseUs?.items;
-  const features = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false) : WHY_CHOOSE_US;
+  const features = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false) : cmsAvailable ? [] : WHY_CHOOSE_US;
   return (
   <section className="py-16 lg:py-24 bg-[var(--bg-soft)]">
     <div className="container-x">

@@ -41,7 +41,7 @@ const Testimonials = () => {
               {reviews.map((t) => (
                 <div key={t.name} className="shrink-0 w-full sm:w-1/3 px-0 sm:px-3">
                   <div className="card p-8 h-full">
-                    {t.image && <img src={t.image.startsWith("/uploads") ? resolveImageUrl(t.image) : t.image} alt={`${t.name}, student`} className="mb-4 h-12 w-12 rounded-full object-cover" loading="lazy" />}
+                    {t.image && <img src={t.image.startsWith("/uploads") ? resolveImageUrl(t.image) : t.image} alt={`${t.name}, student`} className="mb-4 h-12 w-12 rounded-full object-cover" loading="lazy" onError={(event) => { event.currentTarget.remove(); }} />}
                     <div className="flex gap-1 text-[var(--orange)] mb-4">
                       {Array.from({ length: t.rating }).map((_, i) => (
                         <StarIcon key={i} size={16} fill="currentColor" />

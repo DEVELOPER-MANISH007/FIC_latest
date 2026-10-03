@@ -31,8 +31,8 @@ const Navbar = () => {
   const brand = settings.brand || {};
   const navbar = settings.navbar || {};
   const links = navbar.items?.filter((link: any) => link.visible !== false).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) || NAV_LINKS;
-  const instituteName = brand.name || SITE.name;
-  const instituteLocation = brand.locationName || SITE.locationName;
+  const instituteName = brand.name || (cmsAvailable ? "" : SITE.name);
+  const instituteLocation = brand.locationName || (cmsAvailable ? "" : SITE.locationName);
   const phone = settings.contact?.phones?.[0] || (cmsAvailable ? "" : SITE.phones[0]);
   const onHome = pathname === "/";
 
@@ -85,7 +85,7 @@ const Navbar = () => {
     <header id="navbar" className={cn("fixed left-0 right-0 z-50 transition-[top]", settings.homepage?.announcement?.enabled && settings.websiteSettings?.showHomepageAnnouncement !== false ? "top-9" : "top-0", scrolled && "solid")}>
       <nav className="container-x flex items-center justify-between gap-2 sm:gap-4 py-3.5 min-h-[72px]">
         <a href={sectionHref("#home")} className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-[calc(100%-3.5rem)] xl:max-w-[220px] xl:shrink-0">
-          <img src={(brand.logo || "").startsWith("/uploads") ? resolveImageUrl(brand.logo) : brand.logo || logo} alt={`${instituteName} logo`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-lg bg-white shrink-0" />
+          <img src={(() => { const image = scrolled && brand.alternateLogo ? brand.alternateLogo : brand.logo; return image ? (image.startsWith("/uploads") ? resolveImageUrl(image) : image) : logo; })()} alt={`${instituteName} logo`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-lg bg-white shrink-0" onError={(event) => { event.currentTarget.src = logo; }} />
           <div className="leading-tight min-w-0">
             <p className={cn("font-display font-bold text-[14px] sm:text-[15px] truncate", scrolled ? "text-[var(--ink)]" : "text-white")}>
               {instituteName}
@@ -111,10 +111,11 @@ const Navbar = () => {
         </div>
 
         <div className="hidden shrink-0 items-center gap-3 xl:flex">
-          {student ? <UserMenu scrolled={scrolled} /> : <LoginDropdown scrolled={scrolled} onStudentLogin={() => setStudentLoginOpen(true)} label={navbar.studentLoginLabel || "Student Login"} />}
-          <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} className="btn btn-sm btn-primary shadow-[0_14px_30px_-10px_rgba(255,122,41,0.55)]">
-            {navbar.admissionCtaLabel || "Apply for Admission"}
+          {student ? <UserMenu scrolled={scrolled} /> : <LoginDropdown scrolled={scrolled} onStudentLogin={() => setStudentLoginOpen(true)} label={navbar.studentLoginLabel || (cmsAvailable ? "" : "Student Login")} />}
+          {(navbar.admissionCtaHref || !cmsAvailable) && (navbar.admissionCtaLabel || !cmsAvailable) && <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} className="btn btn-sm btn-primary shadow-[0_14px_30px_-10px_rgba(255,122,41,0.55)]">
+            {navbar.admissionCtaLabel || (cmsAvailable ? "" : "Apply for Admission")}
           </a>
+          }
         </div>
 
         <button
@@ -182,12 +183,12 @@ const Navbar = () => {
                 )
               )}
               <div className="mt-5 space-y-3">
-                {student ? <UserMenu fullWidth onNavigate={closeDrawer} /> : <LoginDropdown fullWidth onNavigate={closeDrawer} onStudentLogin={() => setStudentLoginOpen(true)} label={navbar.studentLoginLabel || "Student Login"} />}
-                <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} onClick={closeDrawer} className="btn btn-primary w-full">
-                  {navbar.admissionCtaLabel || "Apply for Admission"}
-                </a>
-                {phone && <a href={`tel:+91${phone}`} onClick={closeDrawer} className="btn btn-navy w-full">
-                  {navbar.callCtaLabel || "Call Now"}
+                {student ? <UserMenu fullWidth onNavigate={closeDrawer} /> : <LoginDropdown fullWidth onNavigate={closeDrawer} onStudentLogin={() => setStudentLoginOpen(true)} label={navbar.studentLoginLabel || (cmsAvailable ? "" : "Student Login")} />}
+                {(navbar.admissionCtaHref || !cmsAvailable) && (navbar.admissionCtaLabel || !cmsAvailable) && <a href={normalizeHref(navbar.admissionCtaHref || "#admission")} onClick={closeDrawer} className="btn btn-primary w-full">
+                  {navbar.admissionCtaLabel || (cmsAvailable ? "" : "Apply for Admission")}
+                </a>}
+                {phone && (navbar.callCtaLabel || !cmsAvailable) && <a href={`tel:+91${phone}`} onClick={closeDrawer} className="btn btn-navy w-full">
+                  {navbar.callCtaLabel || (cmsAvailable ? "" : "Call Now")}
                 </a>}
               </div>
             </motion.div>

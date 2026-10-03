@@ -45,7 +45,7 @@ const Gallery = () => {
                   className="gal-item aspect-square"
                   onClick={() => openLightbox(imgSrc, item.title || `${item.category} at Future IT College`)}
                 >
-                  <img src={imgSrc} alt={item.caption || item.title || `${item.category} at Future IT College`} loading="lazy" />
+                  <img src={imgSrc} alt={item.caption || item.title || `${item.category} at Future IT College`} loading="lazy" onError={(event) => { if (event.currentTarget.dataset.fallback !== "true") { event.currentTarget.dataset.fallback = "true"; event.currentTarget.src = FALLBACK[i % FALLBACK.length].image; } }} />
                   <div className="gal-overlay">
                     <span className="text-center text-white text-[12.5px] font-medium">{item.caption || item.eventName || item.title || item.category}{item.eventDate ? ` · ${new Date(item.eventDate).toLocaleDateString()}` : ""}{item.isFeatured ? " · Featured" : ""}</span>
                   </div>

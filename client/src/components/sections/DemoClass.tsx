@@ -3,8 +3,9 @@ import SectionEyebrow from "@/components/common/SectionEyebrow";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const DemoClass = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const content = settings.homepage?.sections?.demoClass || {};
+  const text = (value: string | undefined, fallback: string) => cmsAvailable ? value ?? "" : value || fallback;
   return (
   <section className="py-16 lg:py-20">
     <div className="container-x">
@@ -14,16 +15,16 @@ const DemoClass = () => {
           style={{ background: "linear-gradient(120deg,var(--navy-soft),var(--navy))" }}
         >
           <div>
-            <SectionEyebrow variant="dark">{content.eyebrow || "Try Before You Commit"}</SectionEyebrow>
+            <SectionEyebrow variant="dark">{text(content.eyebrow, "Try Before You Commit")}</SectionEyebrow>
             <h2 className="font-display font-bold text-2xl lg:text-3xl text-white mt-4">
-              {content.title || "Experience Before You Decide"}
+              {text(content.title, "Experience Before You Decide")}
             </h2>
             <p className="text-[#C6CEEF] mt-4 leading-relaxed">
-              {content.description || "Students are welcome to attend demo classes for approximately 5–7 days before choosing a course — helping them understand the teaching style, classroom environment and learning experience firsthand."}
+              {text(content.description, "Students are welcome to attend demo classes for approximately 5–7 days before choosing a course — helping them understand the teaching style, classroom environment and learning experience firsthand.")}
             </p>
-            <a href={content.buttonHref || "#contact"} className="btn btn-primary mt-7">
-              {content.buttonText || "Book a Demo"}
-            </a>
+            {(content.buttonHref || !cmsAvailable) && <a href={content.buttonHref || "#contact"} className="btn btn-primary mt-7">
+              {text(content.buttonText, "Book a Demo")}
+            </a>}
           </div>
           <div className="flex justify-center lg:justify-end">
             <div className="grid grid-cols-2 gap-4 max-w-xs">

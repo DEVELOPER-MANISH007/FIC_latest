@@ -10,6 +10,8 @@ export const defaultWebsiteContent = {
     description: "Empowering students with practical computer education, industry-ready skills and career-focused learning since 2016. From computer basics to professional software training, we prepare students for real-world success.",
     establishedYear: 2016,
     logo: "",
+    alternateLogo: "",
+    footerLogo: "",
     favicon: "/favicon.png",
     primaryColor: "#193B5A",
     secondaryColor: "#0D1533",
@@ -58,7 +60,7 @@ export const defaultWebsiteContent = {
       secondaryButtonHref: "#courses",
       trustBadges: ["Since 2016", "3000+ Students Trained", "Job Assistance", "Government Certified Courses", "5–7 Days Demo Classes"],
     },
-    quickActions: { enabled: true, showCall: true, showWhatsApp: true, showScrollTop: true, mobileCallLabel: "Call Now", mobileAdmissionLabel: "Apply Now" },
+    quickActions: { enabled: true, showCall: true, showWhatsApp: true, showScrollTop: true, mobileCallLabel: "Call Now", mobileWhatsappLabel: "WhatsApp", whatsappLabel: "Chat on WhatsApp", mobileAdmissionLabel: "Apply Now", mobileAdmissionHref: "#contact" },
     stats: [
       { label: "Students Trained", value: 3000, suffix: "+", visible: true, order: 1 },
       { label: "Professional Courses", value: 20, suffix: "+", visible: true, order: 2 },
@@ -102,7 +104,7 @@ export const defaultWebsiteContent = {
       facilities: {
         order: 10,
         enabled: true, eyebrow: "Campus & Facilities", title: "A campus built for focused learning",
-        items: [item("Fully AC Computer Lab", "", "snowflake", 1), item("Modern Desktop Computers", "", "monitor", 2), item("High-Speed Internet", "", "wifi", 3), item("Practical-Oriented Training", "", "checkFile", 4), item("Smart Touch Screen Classroom", "", "presentation", 5), item("RO & Cold Drinking Water", "", "droplet", 6), item("Clean Washroom Facilities", "", "washroom", 7), item("Comfortable Learning Environment", "", "users2", 8), item("Small Batch Size", "", "userGroup", 9), item("Individual Student Guidance", "", "shield", 10)],
+        items: [item("Fully AC Computer Lab", "", "snowflake", 1), item("Modern Desktop Computers", "", "monitor", 2), item("High-Speed Internet", "", "wifi", 3), item("Practical-Oriented Training", "", "checkFile", 4), item("Smart Touch Screen Classroom", "", "presentation", 5), item("RO & Cold Drinking Water", "", "droplet", 6), item("Clean Washroom Facilities", "", "washroom", 7), item("Comfortable Learning Environment", "", "users2", 8), item("Small Batch Size", "", "userGroup", 9), item("Individual Student Guidance", "", "shield", 10)].map((facility) => ({ ...facility, image: "" })),
       },
       faculty: { enabled: true, order: 11, eyebrow: "Meet the Faculty", title: "Learn with experienced instructors", subtitle: "A team focused on practical learning and individual student guidance." },
       studentSuccess: {
@@ -112,7 +114,7 @@ export const defaultWebsiteContent = {
       },
       laptopProgram: { enabled: true, order: 13, eyebrow: "Learning Resources", title: "Tools and guidance for learning", description: "Ask about available computer access and guidance for choosing a personal laptop." },
       certificate: { enabled: true, order: 14, eyebrow: "Course Completion", title: "Showcase the skills you build", description: "Students who complete eligible programs receive a course completion certificate.", image: "" },
-      admission: { enabled: true, order: 15, eyebrow: "Admission Enquiry", title: "Let's get you started", description: "Share your details and our team will help you choose a course and plan a visit.", process: { eyebrow: "Admission Process", title: "Six simple steps to get started", steps: ["Contact Institute", "Visit Campus or Apply Online", "Attend 5–7 Day Demo Classes", "Select Course", "Complete Admission", "Start Learning"].map((title, index) => ({ title, step: index + 1, isActive: true })) } },
+      admission: { enabled: true, order: 15, eyebrow: "Admission Enquiry", title: "Let's get you started", description: "Share your details and our team will help you choose a course and plan a visit.", enquiryButtonText: "Send an enquiry", enquiryButtonHref: "#contact", process: { eyebrow: "Admission Process", title: "Six simple steps to get started", steps: ["Contact Institute", "Visit Campus or Apply Online", "Attend 5–7 Day Demo Classes", "Select Course", "Complete Admission", "Start Learning"].map((title, index) => ({ title, step: index + 1, isActive: true })) } },
       gallery: { enabled: true, order: 16, eyebrow: "Gallery", title: "A glimpse inside the campus", subtitle: "See classrooms, labs and everyday learning at Future IT College." },
       testimonials: { enabled: false, order: 17, eyebrow: "Testimonials", title: "What students say", subtitle: "Reviews shared by students after completing their courses." },
       faqs: {
@@ -132,7 +134,7 @@ export const defaultWebsiteContent = {
       finalCta: { enabled: true, order: 22, title: "Ready to start your journey?", description: "Book a demo class and see the Future IT College learning environment for yourself.", primaryButtonText: "Apply for Admission", primaryButtonHref: "#admission", secondaryButtonText: "Call Now" },
     },
   },
-  footer: { tagline: "Practical, career-focused computer education since 2016.", copyright: "© {year} Future IT College. All rights reserved.", quickLinksTitle: "Quick Links", links: [{ label: "Courses", href: "#courses", visible: true, order: 1 }, { label: "Facilities", href: "#facilities", visible: true, order: 2 }, { label: "Gallery", href: "#gallery", visible: true, order: 3 }, { label: "Admission", href: "#admission", visible: true, order: 4 }, { label: "Contact", href: "#contact", visible: true, order: 5 }, { label: "Notices", href: "/notices", visible: true, order: 6 }, { label: "Library", href: "/library", visible: true, order: 7 }] },
+  footer: { logo: "", tagline: "Practical, career-focused computer education since 2016.", copyright: "© {year} Future IT College. All rights reserved.", quickLinksTitle: "Quick Links", links: [{ label: "Courses", href: "#courses", visible: true, order: 1 }, { label: "Facilities", href: "#facilities", visible: true, order: 2 }, { label: "Gallery", href: "#gallery", visible: true, order: 3 }, { label: "Admission", href: "#admission", visible: true, order: 4 }, { label: "Contact", href: "#contact", visible: true, order: 5 }, { label: "Notices", href: "/notices", visible: true, order: 6 }, { label: "Library", href: "/library", visible: true, order: 7 }] },
   seo: {
     title: "Future IT College | Computer Courses & Practical Training in Veerapura",
     description: "Computer courses, practical learning, student resources and admissions at Future IT College, Veerapura, Aligarh.",

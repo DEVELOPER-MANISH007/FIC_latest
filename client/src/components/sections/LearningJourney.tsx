@@ -4,9 +4,9 @@ import { LEARNING_JOURNEY } from "@/constants/siteData";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const LearningJourney = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const configured = settings.homepage?.sections?.learningJourney?.items;
-  const steps = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false).map((entry: any, index: number) => ({ ...entry, step: entry.step || index + 1 })) : LEARNING_JOURNEY;
+  const steps = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false).map((entry: any, index: number) => ({ ...entry, step: entry.step || index + 1 })) : cmsAvailable ? [] : LEARNING_JOURNEY;
   const firstRow = steps.slice(0, 4);
   const secondRow = steps.slice(4);
 

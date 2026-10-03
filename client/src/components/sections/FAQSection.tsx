@@ -9,9 +9,9 @@ import { useWebsite } from "@/context/WebsiteContext";
 const PlusIcon = getIcon("plus");
 
 const FAQSection = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const content = settings.homepage?.sections?.faqs || {};
-  const faqs = Array.isArray(content.items) ? content.items : FAQS;
+  const faqs = Array.isArray(content.items) ? content.items : cmsAvailable ? [] : FAQS;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (

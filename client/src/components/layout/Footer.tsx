@@ -14,6 +14,8 @@ const Footer = () => {
   const brand = settings.brand || {};
   const contact = settings.contact || {};
   const footer = settings.footer || {};
+  const footerLogo = footer.logo || brand.footerLogo || brand.logo || "";
+  const footerLogoSrc = footerLogo.startsWith("/uploads") ? resolveImageUrl(footerLogo) : footerLogo || logo;
   const email = contact.email || (cmsAvailable ? "" : SITE.email);
   const locationName = brand.locationName || (cmsAvailable ? "" : SITE.locationName);
   const address = contact.address || (cmsAvailable ? {} : SITE.address);
@@ -32,14 +34,14 @@ const Footer = () => {
       <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <img src={(brand.logo || "").startsWith("/uploads") ? resolveImageUrl(brand.logo) : brand.logo || logo} alt={`${brand.name || SITE.name} logo`} className="w-10 h-10 rounded-xl object-cover bg-white" />
+            <img src={footerLogoSrc} alt={`${brand.name || SITE.name} logo`} className="w-10 h-10 rounded-xl object-cover bg-white" onError={(event) => { event.currentTarget.src = logo; }} />
             <div className="min-w-0">
-              <p className="font-display font-bold text-white text-[15px] [overflow-wrap:anywhere]">{brand.name || SITE.name}</p>
+              <p className="font-display font-bold text-white text-[15px] [overflow-wrap:anywhere]">{brand.name || (cmsAvailable ? "" : SITE.name)}</p>
               {locationName && <p className="text-[10.5px] text-[#9AA4D4] [overflow-wrap:anywhere]">{locationName}</p>}
             </div>
           </div>
           <p className="text-[13px] text-[#9AA4D4] mt-5 leading-relaxed">
-            {footer.tagline || `Practical, career-focused computer education since ${brand.establishedYear || SITE.establishedYear}.`}
+            {footer.tagline || (cmsAvailable ? "" : `Practical, career-focused computer education since ${brand.establishedYear || SITE.establishedYear}.`)}
           </p>
           <div className="flex gap-3 mt-5">
             {socials.map((social: any) => {
@@ -59,7 +61,7 @@ const Footer = () => {
         </div>
 
         <div className="min-w-0">
-          <p className="font-display font-semibold text-white text-[14px] mb-4">{footer.quickLinksTitle || "Quick Links"}</p>
+          <p className="font-display font-semibold text-white text-[14px] mb-4">{footer.quickLinksTitle || (cmsAvailable ? "" : "Quick Links")}</p>
           <ul className="space-y-3 text-[13.5px] text-[#9AA4D4]">
             {footerLinks.map((link: any) => <li key={`${link.label}-${link.href}`}><a href={normalizeHref(link.href)} className="hover:text-white transition">{link.label}</a></li>)}
           </ul>
@@ -93,7 +95,7 @@ const Footer = () => {
       </div>
 
       <div className="mt-10 flex min-w-0 flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center">
-        <p className="text-[12px] text-[#8188B8] [overflow-wrap:anywhere]">{(footer.copyright || "© {year} Future IT College. All rights reserved.").replace("{year}", String(new Date().getFullYear())).replace("Future IT College", brand.name || SITE.name)}</p>
+        <p className="text-[12px] text-[#8188B8] [overflow-wrap:anywhere]">{(footer.copyright || (cmsAvailable ? "" : "© {year} Future IT College. All rights reserved.")).replace("{year}", String(new Date().getFullYear())).replace("Future IT College", brand.name || (cmsAvailable ? "" : SITE.name))}</p>
         {locationName && <p className="text-[12px] text-[#8188B8] [overflow-wrap:anywhere]">{locationName}</p>}
       </div>
     </div>

@@ -9,7 +9,9 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { defaultWebsiteContent, mergeWebsiteDefaults } from "../constants/defaultWebsiteContent.js";
 
-const publicCache = (res) => res.set("Cache-Control", "public, max-age=0, s-maxage=60, stale-while-revalidate=300");
+// Website edits should appear on the next public request instead of waiting for
+// a shared CDN cache window to expire.
+const publicCache = (res) => res.set("Cache-Control", "no-store, max-age=0");
 
 const findSettings = async () => {
   const record = await WebsiteSettings.findOne({ key: "main" }).lean();

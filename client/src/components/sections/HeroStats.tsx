@@ -3,9 +3,9 @@ import { HERO_STATS } from "@/constants/siteData";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const HeroStats = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const cmsStats = settings.homepage?.stats;
-  const stats = Array.isArray(cmsStats) ? cmsStats.filter((stat: any) => stat.visible !== false).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((stat: any) => ({ target: Number(stat.value), suffix: stat.suffix || "", label: stat.label })) : HERO_STATS;
+  const stats = Array.isArray(cmsStats) ? cmsStats.filter((stat: any) => stat.visible !== false).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((stat: any) => ({ target: Number(stat.value), suffix: stat.suffix || "", label: stat.label })) : cmsAvailable ? [] : HERO_STATS;
   if (!stats.length) return null;
   return (
   <section className="relative -mt-1">

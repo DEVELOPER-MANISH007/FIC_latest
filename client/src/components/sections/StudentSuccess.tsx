@@ -5,9 +5,9 @@ import { getIcon } from "@/constants/iconMap";
 import { useWebsite } from "@/context/WebsiteContext";
 
 const StudentSuccess = () => {
-  const { settings } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const configured = settings.homepage?.sections?.studentSuccess?.items;
-  const items = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false) : STUDENT_SUCCESS;
+  const items = Array.isArray(configured) ? configured.filter((entry: any) => entry.isActive !== false) : cmsAvailable ? [] : STUDENT_SUCCESS;
   return (
   <section className="py-16 lg:py-20 bg-[var(--bg-soft)]">
     <div className="container-x">

@@ -28,27 +28,27 @@ const Hero = () => {
         className="max-w-3xl"
       >
         <span className="eyebrow on-dark">
-          <span className="eyebrow-dot" /> {hero.eyebrow || `Since ${brand.establishedYear || SITE.establishedYear} · Veerapura, Aligarh`}
+          <span className="eyebrow-dot" /> {cmsAvailable ? hero.eyebrow ?? "" : hero.eyebrow || `Since ${brand.establishedYear || SITE.establishedYear} · Veerapura, Aligarh`}
         </span>
 
         <h1 className="font-display font-extrabold text-white text-[42px] sm:text-[56px] lg:text-[68px] leading-[1.05] mt-6">
-          {activeBanner?.title || hero.title || brand.name || SITE.name}
+          {activeBanner?.title || hero.title || brand.name || (cmsAvailable ? "" : SITE.name)}
         </h1>
-        <p className="text-[#B9C6FF] font-medium text-lg mt-3">{activeBanner?.subtitle || hero.subtitle || brand.alternateName || SITE.alternateName}</p>
+        <p className="text-[#B9C6FF] font-medium text-lg mt-3">{activeBanner?.subtitle || hero.subtitle || brand.alternateName || (cmsAvailable ? "" : SITE.alternateName)}</p>
 
-        <p className="font-display font-semibold text-2xl sm:text-3xl mt-6 text-white">{brand.tagline || SITE.tagline}</p>
+        <p className="font-display font-semibold text-2xl sm:text-3xl mt-6 text-white">{brand.tagline || (cmsAvailable ? "" : SITE.tagline)}</p>
 
         <p className="text-[#CBD3F0] text-[16px] sm:text-[17px] leading-relaxed mt-5 max-w-xl">
-          {activeBanner?.description || hero.description || brand.description || SITE.description}
+          {activeBanner?.description || hero.description || brand.description || (cmsAvailable ? "" : SITE.description)}
         </p>
 
         <div className="flex flex-wrap gap-4 mt-9">
           <a href={activeBanner?.primaryCtaHref || hero.primaryButtonHref || "#contact"} className="btn btn-primary">
-            {activeBanner?.primaryCtaText || hero.primaryButtonText || "Apply for Admission"}
+            {activeBanner?.primaryCtaText || hero.primaryButtonText || (cmsAvailable ? "" : "Apply for Admission")}
             <ArrowRightIcon size={16} />
           </a>
           <a href={activeBanner?.secondaryCtaHref || hero.secondaryButtonHref || "#courses"} className="btn btn-outline">
-            {activeBanner?.secondaryCtaText || hero.secondaryButtonText || "Explore Courses"}
+            {activeBanner?.secondaryCtaText || hero.secondaryButtonText || (cmsAvailable ? "" : "Explore Courses")}
           </a>
         </div>
 

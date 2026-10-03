@@ -48,6 +48,7 @@ const Faculty = () => {
                       className="w-full h-full object-cover"
                       style={{ objectPosition: i === 1 ? "50% 15%" : "50% 50%" }}
                       loading="lazy"
+                      onError={(event) => { if (event.currentTarget.dataset.fallback !== "true") { event.currentTarget.dataset.fallback = "true"; event.currentTarget.src = i === 0 ? directorFallback : facultyFallback; } }}
                     />
                   </div>
                   <div className="p-6">
