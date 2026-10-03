@@ -77,6 +77,33 @@ export interface InstituteDetails {
   };
 }
 
+export interface AdmissionFormData {
+  name: string;
+  phone: string;
+  email?: string;
+  fatherName: string;
+  address: string;
+  course: string;
+  qualification: string;
+  message?: string;
+}
+
+export type AdmissionStatus = "new" | "contacted" | "admitted" | "closed";
+
+export interface AdmissionRecord {
+  _id: string;
+  name: string;
+  fatherName: string;
+  phone: string;
+  email?: string;
+  address: string;
+  course: string;
+  qualification: string;
+  message?: string;
+  status: AdmissionStatus;
+  createdAt: string;
+}
+
 export type EnquiryStatus = "new" | "read" | "resolved";
 
 export interface EnquiryRecord {
