@@ -1,7 +1,7 @@
 import Reveal from "@/components/common/Reveal";
 import SectionHeading from "@/components/common/SectionHeading";
 import { getIcon } from "@/constants/iconMap";
-import { COURSES_FALLBACK } from "@/constants/siteData";
+import { COURSE_CATALOG } from "@/data/courses";
 import type { Course } from "@/types";
 import { useWebsite } from "@/context/WebsiteContext";
 import { resolveImageUrl } from "@/services/api/axiosInstance";
@@ -17,10 +17,9 @@ const COURSE_CATEGORY_LABELS: Record<string, string> = {
 };
 
 const Courses = () => {
-  const { settings, courses: cmsCourses, cmsAvailable } = useWebsite();
+  const { settings } = useWebsite();
   const content = settings.homepage?.sections?.courses || {};
-  const courses = (cmsAvailable ? cmsCourses : COURSES_FALLBACK) as Course[];
-  const visibleCourses = courses.filter((course) => course.category !== "industry");
+  const visibleCourses = COURSE_CATALOG.filter((course) => course.category !== "industry");
 
   return (
     <section id="courses" className="py-16 lg:py-24">

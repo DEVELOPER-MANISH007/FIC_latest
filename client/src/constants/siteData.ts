@@ -1,4 +1,5 @@
 import type { Course, FAQItem, RoadmapStep, Testimonial } from "@/types";
+import { COURSE_CATALOG } from "@/data/courses";
 
 export const SITE = {
   name: "Future IT College",
@@ -104,29 +105,7 @@ export const ADMISSION_PROCESS: RoadmapStep[] = [
   { step: 6, title: "Start Learning" },
 ];
 
-export const COURSES_FALLBACK: Course[] = [
-  { title: "Basic Computer Course", description: "Foundational computer literacy for absolute beginners.", icon: "monitor", category: "general" },
-  { title: "CCC", description: "Government-recognized Course on Computer Concepts.", icon: "award", category: "general" },
-  { title: "DCA", description: "Diploma in Computer Applications — broad digital skills.", icon: "fileText", category: "general" },
-  { title: "ADCA", description: "Advanced Diploma covering deeper computer applications.", icon: "checkFile", category: "general" },
-  { title: "DOAP", description: "Diploma in Office Automation & Programming.", icon: "layout", category: "office" },
-  { title: "DCAA", description: "Diploma in Computer Applications & Accounting.", icon: "trendingUp", category: "office" },
-  { title: "MS Office", description: "Word, Excel, PowerPoint for everyday productivity.", icon: "briefcase", category: "office" },
-  { title: "Advanced Excel", description: "Formulas, pivot tables and data analysis in Excel.", icon: "grid", category: "office" },
-  { title: "Tally with GST", description: "Accounting and GST-compliant billing using Tally.", icon: "rupee", category: "office" },
-  { title: "Python", description: "Beginner-friendly programming for logic and automation.", icon: "code", category: "programming" },
-  { title: "Core Java (OOPs)", description: "Object-oriented programming fundamentals in Java.", icon: "layers", category: "programming" },
-  { title: "JavaScript", description: "Interactive, dynamic web programming basics.", icon: "zap", category: "programming" },
-  { title: "HTML5", description: "The building blocks of every website.", icon: "code2", category: "programming" },
-  { title: "CSS3", description: "Styling and layout for modern, responsive websites.", icon: "palette", category: "programming" },
-  { title: "SQL", description: "Structured Query Language for managing data.", icon: "database", category: "programming" },
-  { title: "MySQL", description: "Practical relational database management.", icon: "database2", category: "programming" },
-  { title: "C", description: "The foundational language behind modern programming.", icon: "terminal", category: "programming" },
-  { title: "C++", description: "Object-oriented extension of C for structured software.", icon: "terminal2", category: "programming" },
-  { title: "Web Development", description: "Full front-end web building using HTML, CSS & JS.", icon: "globe", category: "programming" },
-  { title: "AutoCAD", description: "Professional 2D/3D drafting used across engineering.", icon: "drafting", category: "industry", featured: true, badge: "New in 2026" },
-  { title: "Siemens NX", description: "Industry-grade CAD/CAM/CAE for product design.", icon: "cube", category: "industry", featured: true, badge: "New in 2026" },
-];
+export const COURSES_FALLBACK: Course[] = COURSE_CATALOG;
 
 export const COURSE_OPTIONS = COURSES_FALLBACK.map((c) => c.title).concat(["Not sure yet"]);
 

@@ -1,20 +1,16 @@
 import Reveal from "@/components/common/Reveal";
 import SectionEyebrow from "@/components/common/SectionEyebrow";
 import { getIcon } from "@/constants/iconMap";
-import { COURSES_FALLBACK } from "@/constants/siteData";
-import type { Course } from "@/types";
+import { INDUSTRY_COURSES } from "@/data/courses";
 import { useWebsite } from "@/context/WebsiteContext";
 import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 const CheckIcon = getIcon("checkCircle");
 const IndustryCourses = () => {
-  const { settings, courses: websiteCourses, cmsAvailable } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const content = settings.homepage?.sections?.industryCourses || {};
   const text = (value: string | undefined, fallback: string) => cmsAvailable ? value ?? "" : value || fallback;
-  const courses = (cmsAvailable ? websiteCourses : COURSES_FALLBACK) as Course[];
-  const items = courses.filter((course) => course.category === "industry");
-  const fallback = COURSES_FALLBACK.filter((course) => course.category === "industry").slice(0, 2);
-  const cards = cmsAvailable ? items : fallback;
+  const cards = INDUSTRY_COURSES;
   const highlights = Array.isArray(content.highlights) ? content.highlights : cmsAvailable ? [] : ["Hands-on software practice", "Instructor-led learning", "Project-based training", "Career guidance"];
 
   return <section id="industry-training" className="py-16 lg:py-20 bg-[#142343] text-white">
