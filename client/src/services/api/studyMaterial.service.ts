@@ -7,8 +7,6 @@ export interface MaterialFilters {
   subject?: string;
   keyword?: string;
   sortBy?: "latest" | "oldest";
-  /** "My Notes" mode — only material the student can actually open, no locked entries. */
-  accessibleOnly?: boolean;
 }
 
 export const fetchMaterials = async (filters: MaterialFilters = {}) => {

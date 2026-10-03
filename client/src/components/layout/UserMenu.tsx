@@ -9,7 +9,6 @@ import { cn } from "@/utils/cn";
 
 const MENU_ITEMS = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "My Notes", to: "/dashboard/my-notes" },
   { label: "Profile", to: "/dashboard/profile" },
   { label: "Change Password", to: "/dashboard/change-password" },
 ] as const;
@@ -22,7 +21,7 @@ interface UserMenuProps {
 
 /**
  * Replaces the Login dropdown once a student is signed in — shows their
- * name/avatar with a dropdown to Dashboard, My Notes, Profile, Change
+ * name/avatar with a dropdown to Dashboard, Profile, Change
  * Password, and Logout. Reacts instantly to auth state (no refresh needed)
  * since it reads straight from AuthContext.
  */

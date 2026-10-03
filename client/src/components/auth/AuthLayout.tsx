@@ -21,8 +21,8 @@ const AuthLayout = ({ title, subtitle, children, footer, variant = "student" }: 
       <Link to="/" className="flex items-center justify-center gap-3 mb-8">
         <img src={logo} alt="Future IT College logo" className="w-12 h-12 rounded-xl object-cover bg-white" />
         <div className="text-left">
-          <p className="font-display font-bold text-white text-[15px]">Future IT College</p>
-          <p className="text-[10.5px] text-[#9AA4D4]">Dinesh Computer Center</p>
+          <p className={`font-display font-bold text-[15px] ${variant === "admin" ? "text-[var(--navy)]" : "text-white"}`}>Future IT College</p>
+          <p className={`text-[10.5px] ${variant === "admin" ? "text-[var(--ink-soft)]" : "text-[#9AA4D4]"}`}>Dinesh Computer Center</p>
         </div>
       </Link>
 
