@@ -14,7 +14,7 @@ const PhoneIcon = getIcon("phone");
 const MailIcon = getIcon("mail");
 
 const ContactSection = () => {
-  const { settings, cmsAvailable, courses } = useWebsite();
+  const { settings, cmsAvailable } = useWebsite();
   const contact = settings.contact || {};
   const brand = settings.brand || {};
   const address = contact.address || (cmsAvailable ? {} : SITE.address);
@@ -27,7 +27,7 @@ const ContactSection = () => {
   const mapEmbedUrl = contact.mapEmbedUrl || (cmsAvailable ? "" : SITE.mapEmbedUrl);
   const addressLine = [address.line1, address.city, address.state, address.pincode].filter(Boolean).join(", ");
   const addressText = addressLine || (cmsAvailable ? "" : `${SITE.address.city}, ${SITE.address.state} – ${SITE.address.pincode}`);
-  const courseOptions = cmsAvailable ? courses.map((course) => course.title) : COURSE_OPTIONS;
+  const courseOptions = COURSE_OPTIONS;
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [serverMessage, setServerMessage] = useState("");
 

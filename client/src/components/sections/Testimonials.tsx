@@ -11,12 +11,20 @@ const ChevronRightIcon = getIcon("chevronRight");
 const StarIcon = getIcon("star");
 
 const Testimonials = () => {
-  const { settings, testimonials } = useWebsite();
+  const { settings, testimonials, cmsLoading } = useWebsite();
   const content = settings.homepage?.sections?.testimonials || {};
   const reviews = testimonials.filter((item) => item.isActive !== false);
   const [index, setIndex] = useState(0);
   const perView = typeof window !== "undefined" && window.innerWidth >= 900 ? 3 : 1;
   const maxIndex = Math.max(0, reviews.length - perView);
+
+  if (cmsLoading) return <section className="py-16 lg:py-24" aria-busy="true" aria-label="Loading testimonials">
+    <div className="container-x">
+      <div className="mx-auto max-w-xl text-center animate-pulse motion-reduce:animate-none"><div className="h-4 w-28 mx-auto rounded bg-[var(--bg-soft)]" /><div className="h-8 w-2/3 mx-auto mt-4 rounded bg-[var(--bg-soft)]" /><div className="h-4 w-1/2 mx-auto mt-3 rounded bg-[var(--bg-soft)]" /></div>
+      <div className="grid md:grid-cols-3 gap-5 mt-10">{Array.from({ length: 3 }, (_, i) => <div key={i} className="card h-52 p-6 animate-pulse motion-reduce:animate-none"><div className="h-4 w-24 rounded bg-[var(--bg-soft)]" /><div className="h-4 w-full mt-8 rounded bg-[var(--bg-soft)]" /><div className="h-4 w-3/4 mt-3 rounded bg-[var(--bg-soft)]" /></div>)}</div>
+      <span className="sr-only">Loading student reviews…</span>
+    </div>
+  </section>;
 
   const next = () => setIndex((i) => (i >= maxIndex ? 0 : i + 1));
   const prev = () => setIndex((i) => (i <= 0 ? maxIndex : i - 1));

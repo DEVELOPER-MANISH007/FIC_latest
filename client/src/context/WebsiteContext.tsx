@@ -5,6 +5,7 @@ import { resolveImageUrl } from "@/services/api/axiosInstance";
 
 export type WebsiteBundle = {
   cmsAvailable: boolean;
+  cmsLoading: boolean;
   settings: Record<string, any>;
   banners: Record<string, any>[];
   notices: Record<string, any>[];
@@ -14,16 +15,25 @@ export type WebsiteBundle = {
   testimonials: Record<string, any>[];
 };
 
-const EMPTY_BUNDLE: WebsiteBundle = { cmsAvailable: false, settings: {}, banners: [], notices: [], courses: [], faculty: [], gallery: [], testimonials: [] };
+const EMPTY_BUNDLE: WebsiteBundle = { cmsAvailable: false, cmsLoading: true, settings: {}, banners: [], notices: [], courses: [], faculty: [], gallery: [], testimonials: [] };
 const WebsiteContext = createContext<WebsiteBundle>(EMPTY_BUNDLE);
 
 export const WebsiteProvider = ({ children }: { children: ReactNode }) => {
   const [bundle, setBundle] = useState<WebsiteBundle>(EMPTY_BUNDLE);
   useEffect(() => {
     let active = true;
+    const hasLoaded = { current: false };
     const refresh = () => api.get<ApiResponse<WebsiteBundle>>("/website")
-      .then(({ data }) => { if (active && data.data) setBundle({ ...EMPTY_BUNDLE, ...data.data, cmsAvailable: true }); })
-      .catch(() => { /* existing static site content remains as the offline fallback */ });
+      .then(({ data }) => {
+        if (!active) return;
+        if (!data.data || typeof data.data !== "object") throw new Error("Invalid public website response");
+        hasLoaded.current = true;
+        setBundle({ ...EMPTY_BUNDLE, ...data.data, cmsAvailable: true, cmsLoading: false });
+      })
+      .catch(() => {
+        // Static section fallbacks are allowed only after an actual API failure.
+        if (active && !hasLoaded.current) setBundle({ ...EMPTY_BUNDLE, cmsLoading: false });
+      });
     refresh();
     window.addEventListener("fic:website-refresh", refresh);
     return () => { active = false; window.removeEventListener("fic:website-refresh", refresh); };

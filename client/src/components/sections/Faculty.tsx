@@ -25,7 +25,7 @@ const FALLBACK: FacultyMember[] = [
 ];
 
 const Faculty = () => {
-  const { faculty: cmsFaculty, cmsAvailable } = useWebsite();
+  const { faculty: cmsFaculty, cmsAvailable, cmsLoading } = useWebsite();
   const faculty = (cmsAvailable ? cmsFaculty : FALLBACK) as FacultyMember[];
 
   return (
@@ -33,7 +33,13 @@ const Faculty = () => {
       <div className="container-x">
         <SectionHeading eyebrow="Meet The Team" title="Guided by people who care" sectionKey="faculty" />
 
-        {faculty.length ? <div className="grid sm:grid-cols-2 gap-8 mt-14 max-w-3xl mx-auto">
+        {cmsLoading ? <div className="grid sm:grid-cols-2 gap-8 mt-14 max-w-3xl mx-auto" aria-busy="true" aria-label="Loading faculty profiles">
+          {Array.from({ length: 2 }, (_, i) => <div key={i} className="card overflow-hidden rounded-[var(--radius-lg)] animate-pulse motion-reduce:animate-none">
+            <div className="aspect-[4/5] bg-[var(--bg-soft)]" />
+            <div className="p-6 space-y-3"><div className="h-5 w-2/3 rounded bg-[var(--bg-soft)]" /><div className="h-4 w-1/2 rounded bg-[var(--bg-soft)]" /><div className="h-4 w-3/4 rounded bg-[var(--bg-soft)]" /></div>
+          </div>)}
+          <span className="sr-only">Loading faculty profiles…</span>
+        </div> : faculty.length ? <div className="grid sm:grid-cols-2 gap-8 mt-14 max-w-3xl mx-auto">
           {faculty.map((member, i) => {
             const imgSrc = member.image?.startsWith("/uploads")
               ? resolveImageUrl(member.image)
@@ -48,7 +54,15 @@ const Faculty = () => {
                       className="w-full h-full object-cover"
                       style={{ objectPosition: i === 1 ? "50% 15%" : "50% 50%" }}
                       loading="lazy"
-                      onError={(event) => { if (event.currentTarget.dataset.fallback !== "true") { event.currentTarget.dataset.fallback = "true"; event.currentTarget.src = i === 0 ? directorFallback : facultyFallback; } }}
+                      onError={(event) => {
+                        const image = event.currentTarget;
+                        if (!cmsAvailable && image.dataset.fallback !== "true") {
+                          image.dataset.fallback = "true";
+                          image.src = i === 0 ? directorFallback : facultyFallback;
+                        } else {
+                          image.style.visibility = "hidden";
+                        }
+                      }}
                     />
                   </div>
                   <div className="p-6">

@@ -1,14 +1,9 @@
 import type { Course } from "@/types";
 
-type CourseCategory = NonNullable<Course["category"]>;
-type CourseEntry = Pick<Course, "title" | "icon"> & {
-  category: Exclude<CourseCategory, "general">;
-  subjects?: string[];
-  featured?: boolean;
-  badge?: string;
-};
+type CatalogCourse = Pick<Course, "title" | "icon" | "category" | "subjects" | "featured" | "badge" | "order" | "ctaLabel" | "ctaHref">;
 
-const entries: CourseEntry[] = [
+/** The single source of truth for the approved public course catalog. */
+const entries: CatalogCourse[] = [
   // Computer & Office (10)
   { title: "Basic Computer Course", category: "office", icon: "monitor" },
   { title: "CCC – Course on Computer Concepts", category: "office", icon: "award" },
@@ -17,7 +12,7 @@ const entries: CourseEntry[] = [
   { title: "DOAP – Diploma in Office Automation & Publishing", category: "office", icon: "layout" },
   { title: "DTP – Desktop Publishing", category: "office", icon: "fileText" },
   { title: "MS Office", category: "office", icon: "briefcase" },
-  { title: "Hindi & English Typing", category: "office", icon: "monitor" },
+  { title: "Hindi & English Typing", category: "office", icon: "keyboard" },
   { title: "Data Entry", category: "office", icon: "grid" },
   { title: "Tally Prime + GST", category: "office", icon: "rupee" },
 
@@ -46,7 +41,11 @@ const entries: CourseEntry[] = [
   { title: "AutoCAD", category: "industry", icon: "drafting", featured: true, badge: "Featured" },
 ];
 
-/** The single static source for public course titles, categories and card visuals. */
-export const COURSE_CATALOG: Course[] = entries.map((course, index) => ({ ...course, order: index + 1 }));
+export const COURSE_CATALOG: CatalogCourse[] = entries.map((course, index) => ({
+  ...course,
+  order: index + 1,
+  ctaLabel: "Enquire about this course",
+  ctaHref: "#contact",
+}));
 
 export const INDUSTRY_COURSES = COURSE_CATALOG.filter((course) => course.category === "industry");

@@ -8,13 +8,31 @@ import { useWebsite } from "@/context/WebsiteContext";
 const ArrowRightIcon = getIcon("arrowRight");
 
 const Hero = () => {
-  const { settings, cmsAvailable } = useWebsite();
+  const { settings, banners, cmsAvailable, cmsLoading } = useWebsite();
   const [activeBanner, setActiveBanner] = useState<Record<string, any> | null>(null);
   const brand = settings.brand || {};
   const hero = settings.homepage?.hero || {};
   const badges = cmsAvailable
     ? (Array.isArray(hero.trustBadges) ? hero.trustBadges : [])
     : TRUST_BADGES;
+  if (cmsLoading) return <section id="home" className="hero-wrap flex items-center" aria-busy="true" aria-label="Loading homepage">
+    <div className="hero-bg" />
+    <div className="container-x relative z-10 pt-32 pb-20 w-full">
+      <div className="max-w-3xl animate-pulse motion-reduce:animate-none space-y-5">
+        <div className="h-4 w-52 rounded bg-white/20" />
+        <div className="h-12 sm:h-16 w-4/5 rounded bg-white/20" />
+        <div className="h-5 w-2/3 rounded bg-white/15" />
+        <div className="h-4 w-full max-w-xl rounded bg-white/15" />
+        <div className="h-12 w-44 mt-7 rounded-lg bg-white/20" />
+      </div>
+      <span className="sr-only">Loading homepage content…</span>
+    </div>
+  </section>;
+  const hasCmsHeroCopy = Boolean(
+    banners.length > 0 || activeBanner?.title || activeBanner?.subtitle || activeBanner?.description ||
+    hero.title || hero.subtitle || hero.description || brand.name || brand.alternateName || brand.tagline
+  );
+  if (cmsAvailable && !hasCmsHeroCopy) return null;
   return (
   <section id="home" className="hero-wrap flex items-center">
     <HeroSlider onBannerChange={setActiveBanner} />

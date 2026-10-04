@@ -21,7 +21,7 @@ const FALLBACK: GalleryItem[] = [
 ];
 
 const Gallery = () => {
-  const { gallery: cmsGallery, cmsAvailable } = useWebsite();
+  const { gallery: cmsGallery, cmsAvailable, cmsLoading } = useWebsite();
   const items = (cmsAvailable ? cmsGallery : FALLBACK) as GalleryItem[];
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState("");
@@ -36,7 +36,10 @@ const Gallery = () => {
       <div className="container-x">
         <SectionHeading eyebrow="Gallery" title="A glimpse inside the campus" sectionKey="gallery" />
 
-        {items.length ? <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
+        {cmsLoading ? <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-14" aria-busy="true" aria-label="Loading gallery">
+          {Array.from({ length: 6 }, (_, i) => <div key={i} className="aspect-square rounded-xl bg-white animate-pulse motion-reduce:animate-none" />)}
+          <span className="sr-only">Loading campus gallery…</span>
+        </div> : items.length ? <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
           {items.map((item, i) => {
             const imgSrc = item.image?.startsWith("/uploads") ? resolveImageUrl(item.image) : item.image;
             return (
@@ -45,7 +48,15 @@ const Gallery = () => {
                   className="gal-item aspect-square"
                   onClick={() => openLightbox(imgSrc, item.title || `${item.category} at Future IT College`)}
                 >
-                  <img src={imgSrc} alt={item.caption || item.title || `${item.category} at Future IT College`} loading="lazy" onError={(event) => { if (event.currentTarget.dataset.fallback !== "true") { event.currentTarget.dataset.fallback = "true"; event.currentTarget.src = FALLBACK[i % FALLBACK.length].image; } }} />
+                  <img src={imgSrc} alt={item.caption || item.title || `${item.category} at Future IT College`} loading="lazy" onError={(event) => {
+                    const image = event.currentTarget;
+                    if (!cmsAvailable && image.dataset.fallback !== "true") {
+                      image.dataset.fallback = "true";
+                      image.src = FALLBACK[i % FALLBACK.length].image;
+                    } else {
+                      image.style.visibility = "hidden";
+                    }
+                  }} />
                   <div className="gal-overlay">
                     <span className="text-center text-white text-[12.5px] font-medium">{item.caption || item.eventName || item.title || item.category}{item.eventDate ? ` · ${new Date(item.eventDate).toLocaleDateString()}` : ""}{item.isFeatured ? " · Featured" : ""}</span>
                   </div>

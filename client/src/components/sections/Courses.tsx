@@ -3,6 +3,8 @@ import SectionHeading from "@/components/common/SectionHeading";
 import { getIcon } from "@/constants/iconMap";
 import { COURSE_CATALOG } from "@/data/courses";
 import { useWebsite } from "@/context/WebsiteContext";
+
+const ArrowRightIcon = getIcon("arrowRight");
 const COURSE_CATEGORY_LABELS: Record<string, string> = {
   general: "Computer & Office",
   office: "Computer & Office",
@@ -23,7 +25,7 @@ const Courses = () => {
         <SectionHeading
           eyebrow={content.eyebrow || "Popular Courses"}
           title={content.title || "Courses built for every learner"}
-          subtitle={content.subtitle || "From foundational computer literacy to professional programming and design software."}
+          subtitle={content.subtitle || "From foundational computer literacy to programming and applied data skills."}
           sectionKey="courses"
         />
 
@@ -39,8 +41,18 @@ const Courses = () => {
                     </div>
                   {course.badge && <span className="badge-new">{course.badge}</span>}
                   </div>
-                  <div className="flex items-center justify-between gap-2 mt-5"><h3 className="font-display font-semibold text-lg">{course.title}</h3><span className="text-[10px] tracking-wide text-[var(--ink-soft)]">{COURSE_CATEGORY_LABELS[course.category || "office"]}</span></div>
+                  <div className="mt-5 flex flex-wrap items-start justify-between gap-2">
+                    <h3 className="min-w-0 flex-1 font-display font-semibold text-lg leading-snug">{course.title}</h3>
+                    {course.category && <span className="shrink-0 text-[10px] tracking-wide text-[var(--ink-soft)]">{COURSE_CATEGORY_LABELS[course.category] || course.category}</span>}
+                  </div>
                   {course.subjects?.length ? <p className="mt-3 text-xs text-[var(--ink-soft)]"><span className="font-semibold text-[var(--ink)]">Subjects:</span> {course.subjects.join(", ")}</p> : null}
+                  {course.ctaHref && course.ctaLabel && <a
+                    href={course.ctaHref}
+                    className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[var(--royal)] mt-auto pt-5 hover:underline"
+                  >
+                    {course.ctaLabel}
+                    <ArrowRightIcon size={14} />
+                  </a>}
                 </div>
               </Reveal>
             );

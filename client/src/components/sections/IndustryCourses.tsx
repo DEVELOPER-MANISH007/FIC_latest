@@ -28,9 +28,10 @@ const IndustryCourses = () => {
           const Icon = getIcon(course.icon || "monitor");
           return <Reveal key={course.title} delay={index * 0.08}>
             <article className="h-full rounded-xl border border-white/15 bg-white p-6 text-[var(--ink)] shadow-sm">
-              <div className="flex items-start justify-between gap-3 mb-4"><div className="w-12 h-12 rounded-lg bg-[var(--bg-soft)] text-[var(--royal)] flex items-center justify-center"><Icon size={24} /></div>{course.badge && <span className="badge-new">{course.badge}</span>}</div>
-              <h3 className="font-display font-semibold text-lg">{course.title}</h3>
-              {course.subjects?.length ? <p className="text-xs text-[var(--ink-soft)] mt-2"><span className="font-semibold text-[var(--ink)]">Subjects:</span> {course.subjects.join(", ")}</p> : null}
+              <div className="w-12 h-12 rounded-lg bg-[var(--bg-soft)] text-[var(--royal)] flex items-center justify-center mb-4"><Icon size={24} /></div>
+              {course.badge && <span className="badge-new">{course.badge}</span>}
+              <h3 className="font-display font-semibold text-lg mt-3">{course.title}</h3>
+              {course.subjects?.length ? <p className="text-sm text-[var(--ink-soft)] mt-2">Subjects: {course.subjects.join(", ")}</p> : null}
             </article>
           </Reveal>;
         })}

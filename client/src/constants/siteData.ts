@@ -122,7 +122,7 @@ export const FAQS: FAQItem[] = [
   {
     question: "Which programming courses are offered?",
     answer:
-      "We offer Python, Core Java (OOPs), JavaScript, HTML5, CSS3, SQL, MySQL, C, and C++, along with web development and industry software like AutoCAD and Siemens NX.",
+      "The catalog includes C Programming, C++ Programming, C++ with OOP, Java Programming, Java with OOP, Python Programming, Python for Data Science, HTML & CSS, JavaScript, Frontend Web Development, Backend Web Development, Full Stack Web Development, MERN Stack Development, PHP & MySQL, and SQL & Database Management.",
   },
   {
     question: "Is practical training provided?",

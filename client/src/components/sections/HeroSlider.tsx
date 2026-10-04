@@ -25,16 +25,16 @@ const imageUrl = (path: string) => path.startsWith("/uploads") ? resolveImageUrl
  * this component only owns the background photography.
  */
 const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<string, any> | null) => void }) => {
-  const { banners, cmsAvailable } = useWebsite();
+  const { banners, cmsAvailable, cmsLoading } = useWebsite();
   // Keep CMS banners (including records without an image) so their content and
   // display order stay CMS-driven. Use the existing bundled institute photos
   // only as a safe image fallback.
   const slides = useMemo(() => cmsAvailable ? banners : [], [banners, cmsAvailable]);
   const images = useMemo(
-    () => slides.length
+    () => cmsLoading ? [] : cmsAvailable
       ? slides.map((banner, slideIndex) => isUsableImagePath(banner.image) ? imageUrl(banner.image.trim()) : HERO_IMAGES[slideIndex % HERO_IMAGES.length])
       : HERO_IMAGES,
-    [slides]
+    [cmsAvailable, cmsLoading, slides]
   );
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -67,7 +67,9 @@ const HeroSlider = ({ onBannerChange }: { onBannerChange?: (banner: Record<strin
     };
   }, [paused, slideCount]);
 
-  if (slideCount === 0) return null;
+  // A successful empty CMS response means no published carousel slides.
+  // Bundled slides are reserved for an unavailable/failed public API.
+  if (cmsLoading || slideCount === 0) return null;
 
   return (
     <div
